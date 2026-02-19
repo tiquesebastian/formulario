@@ -19,3 +19,33 @@
     font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   }
 }
+
+@layer components {
+  .check-symbol {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1px solid #0f5e8f;
+    border-radius: 2px;
+    background: #fff;
+    display: inline-grid;
+    place-content: center;
+    margin: 0;
+    vertical-align: middle;
+  }
+
+  .check-symbol::before {
+    content: '✓';
+    font-size: 12px;
+    line-height: 1;
+    color: #0f5e8f;
+    transform: scale(0);
+    transition: transform 120ms ease-in-out;
+    font-weight: 700;
+  }
+
+  .check-symbol:checked::before {
+    transform: scale(1);
+  }
+}
