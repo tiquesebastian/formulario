@@ -15,6 +15,12 @@ const beneficiaryLabels = [
   { b: 'B5' },
 ];
 
+const checklistInputClassName = 'check-symbol focus:outline-none focus:ring-2 focus:ring-sky-300';
+const departmentOptions = ['Amazonas', 'Antioquia', 'Atlántico', 'Bogotá D.C.', 'Cundinamarca', 'Valle del Cauca'];
+const dayOptions = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+const monthOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
+const yearOptions = Array.from({ length: 90 }, (_, i) => String(new Date().getFullYear() - i));
+
 export default function BeneficiariesSection({ register, errors }: BeneficiariesSectionProps) {
   return (
     <section className="overflow-hidden border border-sky-300">
@@ -92,18 +98,16 @@ export default function BeneficiariesSection({ register, errors }: Beneficiaries
           <thead>
             <tr className="border border-sky-300">
               <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900 text-left">Fila</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Tipo Doc</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Número Doc</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Nacionalidad</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Sexo Bio</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Sexo Id</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Cual</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">País Nac</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Dpto Nac</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Municipio</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Día Nac</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Mes Nac</th>
-              <th className="border border-sky-300 bg-blue-100 px-0.5 py-0 text-[9px] font-bold text-sky-900">Año Nac</th>
+              <th className="min-w-[120px] border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">36. Tipo de documento</th>
+              <th className="border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">37. Número de documento</th>
+              <th className="border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">38. Nacionalidad</th>
+              <th className="min-w-[120px] border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">39. Sexo biológico</th>
+              <th className="min-w-[140px] border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">40. Sexo de identificación</th>
+              <th className="border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. País nacimiento</th>
+              <th className="min-w-[120px] border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Departamento (desplegable)</th>
+              <th className="border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Municipio</th>
+              <th className="min-w-[130px] border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Segundo departamento (desplegable)</th>
+              <th className="min-w-[150px] border border-sky-300 bg-blue-100 px-1 py-0 text-[9px] font-bold text-sky-900">42. Fecha de nacimiento (desplegable)</th>
             </tr>
           </thead>
           <tbody>
@@ -115,7 +119,7 @@ export default function BeneficiariesSection({ register, errors }: Beneficiaries
                 <td className="border border-sky-300 p-0">
                   <select
                     {...register(`beneficiario${b}TipoDocumento` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
+                    className="w-full px-1 py-0.5 border-0 text-[9px]"
                   >
                     <option value="">-</option>
                     <option value="CC">CC</option>
@@ -130,7 +134,7 @@ export default function BeneficiariesSection({ register, errors }: Beneficiaries
                   <input
                     type="text"
                     {...register(`beneficiario${b}NumeroDocumento` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
+                    className="w-full px-1 py-0.5 border-0 text-[9px]"
                   />
                 </td>
 
@@ -139,60 +143,88 @@ export default function BeneficiariesSection({ register, errors }: Beneficiaries
                   <input
                     type="text"
                     {...register(`beneficiario${b}Nacionalidad` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
+                    className="w-full px-1 py-0.5 border-0 text-[9px]"
                   />
                 </td>
 
                 {/* Sexo Biológico */}
-                <td className="border border-sky-300 p-0">
-                  <select
-                    {...register(`beneficiario${b}SexoBiologico` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
-                  >
-                    <option value="">-</option>
-                    <option value="F">F</option>
-                    <option value="M">M</option>
-                  </select>
+                <td className="border border-sky-300 px-1 py-0.5 text-[9px] text-sky-900">
+                  <div className="flex items-center gap-2">
+                    <label className="inline-flex items-center gap-1">
+                      <input
+                        type="radio"
+                        value="F"
+                        className={checklistInputClassName}
+                        {...register(`beneficiario${b}SexoBiologico` as keyof AffiliationFormData)}
+                      />
+                      F
+                    </label>
+                    <label className="inline-flex items-center gap-1">
+                      <input
+                        type="radio"
+                        value="M"
+                        className={checklistInputClassName}
+                        {...register(`beneficiario${b}SexoBiologico` as keyof AffiliationFormData)}
+                      />
+                      M
+                    </label>
+                  </div>
                 </td>
 
                 {/* Sexo de Identificación */}
-                <td className="border border-sky-300 p-0">
-                  <select
-                    {...register(`beneficiario${b}SexoIdentificacion` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
-                  >
-                    <option value="">-</option>
-                    <option value="F">F</option>
-                    <option value="M">M</option>
-                    <option value="Otro">Otro</option>
-                  </select>
+                <td className="border border-sky-300 px-1 py-0.5 text-[9px] text-sky-900">
+                  <div className="flex items-center gap-2">
+                    <label className="inline-flex items-center gap-1">
+                      <input
+                        type="radio"
+                        value="F"
+                        className={checklistInputClassName}
+                        {...register(`beneficiario${b}SexoIdentificacion` as keyof AffiliationFormData)}
+                      />
+                      F
+                    </label>
+                    <label className="inline-flex items-center gap-1">
+                      <input
+                        type="radio"
+                        value="M"
+                        className={checklistInputClassName}
+                        {...register(`beneficiario${b}SexoIdentificacion` as keyof AffiliationFormData)}
+                      />
+                      M
+                    </label>
+                    <label className="inline-flex items-center gap-1">
+                      <input
+                        type="radio"
+                        value="Otro"
+                        className={checklistInputClassName}
+                        {...register(`beneficiario${b}SexoIdentificacion` as keyof AffiliationFormData)}
+                      />
+                      Otro
+                    </label>
+                  </div>
                 </td>
 
-                {/* Cual (para "Otro") */}
-                <td className="border border-sky-300 p-0">
-                  <input
-                    type="text"
-                    {...register(`beneficiario${b}SexoIdentificacionCual` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
-                  />
-                </td>
-
-                {/* País Nacimiento */}
                 <td className="border border-sky-300 p-0">
                   <input
                     type="text"
                     {...register(`beneficiario${b}PaisBirth` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
+                    className="w-full px-1 py-0.5 border-0 text-[9px]"
                   />
                 </td>
 
                 {/* Departamento Nacimiento */}
                 <td className="border border-sky-300 p-0">
-                  <input
-                    type="text"
+                  <select
                     {...register(`beneficiario${b}DepartamentoBirth` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
-                  />
+                    className="w-full px-1 py-0.5 border-0 text-[9px]"
+                  >
+                    <option value="">-</option>
+                    {departmentOptions.map((department) => (
+                      <option key={department} value={department}>
+                        {department}
+                      </option>
+                    ))}
+                  </select>
                 </td>
 
                 {/* Municipio Nacimiento */}
@@ -200,38 +232,62 @@ export default function BeneficiariesSection({ register, errors }: Beneficiaries
                   <input
                     type="text"
                     {...register(`beneficiario${b}MunicipioBirth` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
+                    className="w-full px-1 py-0.5 border-0 text-[9px]"
                   />
                 </td>
 
-                {/* Día Nacimiento */}
+                {/* Segundo Departamento Nacimiento */}
                 <td className="border border-sky-300 p-0">
-                  <input
-                    type="text"
-                    {...register(`beneficiario${b}FechaNacimientoDia` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
-                    maxLength={2}
-                  />
+                  <select
+                    {...register(`beneficiario${b}SegundoDepartamentoBirth` as keyof AffiliationFormData)}
+                    className="w-full px-1 py-0.5 border-0 text-[9px]"
+                  >
+                    <option value="">-</option>
+                    {departmentOptions.map((department) => (
+                      <option key={`second-${department}`} value={department}>
+                        {department}
+                      </option>
+                    ))}
+                  </select>
                 </td>
 
-                {/* Mes Nacimiento */}
-                <td className="border border-sky-300 p-0">
-                  <input
-                    type="text"
-                    {...register(`beneficiario${b}FechaNacimientoMes` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
-                    maxLength={2}
-                  />
-                </td>
-
-                {/* Año Nacimiento */}
-                <td className="border border-sky-300 p-0">
-                  <input
-                    type="text"
-                    {...register(`beneficiario${b}FechaNacimientoAnio` as keyof AffiliationFormData)}
-                    className="w-full px-0.5 py-0.5 border-0 text-[9px]"
-                    maxLength={4}
-                  />
+                {/* Fecha Nacimiento */}
+                <td className="border border-sky-300 px-1 py-0.5">
+                  <div className="flex items-center gap-1">
+                    <select
+                      {...register(`beneficiario${b}FechaNacimientoDia` as keyof AffiliationFormData)}
+                      className="w-12 border-0 bg-transparent text-[9px]"
+                    >
+                      <option value="">DD</option>
+                      {dayOptions.map((day) => (
+                        <option key={day} value={day}>
+                          {day}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      {...register(`beneficiario${b}FechaNacimientoMes` as keyof AffiliationFormData)}
+                      className="w-12 border-0 bg-transparent text-[9px]"
+                    >
+                      <option value="">MM</option>
+                      {monthOptions.map((month) => (
+                        <option key={month} value={month}>
+                          {month}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      {...register(`beneficiario${b}FechaNacimientoAnio` as keyof AffiliationFormData)}
+                      className="w-16 border-0 bg-transparent text-[9px]"
+                    >
+                      <option value="">AAAA</option>
+                      {yearOptions.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </td>
               </tr>
             ))}
