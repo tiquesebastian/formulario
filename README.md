@@ -4,6 +4,7 @@ Este repositorio contiene la réplica en código de un formulario físico de EPS
 
 ## Estado actual
 - Frontend implementado en React + TypeScript + Vite.
+- Backend inicial implementado en Express + TypeScript + Supabase.
 - Formulario extenso por secciones (I a XII) ya maquetado y funcional.
 - Validaciones de entrada en cliente (solo letras / solo números según campo).
 - Carga de imágenes para firmas, sello y sticker.
@@ -11,12 +12,15 @@ Este repositorio contiene la réplica en código de un formulario físico de EPS
 
 ## Estructura del repo
 - `frontend/`: aplicación principal.
+- `.vscode/`: API para persistencia de formularios en Supabase.
 - `archivo.md`: material de referencia.
 
 ## Documentación detallada
 La guía completa (arquitectura, campos, reglas, PDF, firmas, próximos pasos backend) está en:
 
 - `frontend/README.md`
+- `.vscode/README.md`
+- `README-INSTALACION.md`
 
 ## Próximo paso recomendado
 Implementar backend + base de datos para:

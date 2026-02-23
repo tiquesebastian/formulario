@@ -16,6 +16,7 @@ import { ConyugeSection } from './modules/epsForm/sections/ConyugeSection'
 import BeneficiariesSection from './modules/epsForm/sections/BeneficiariesSection'
 
 const checklistInputClassName = 'check-symbol focus:outline-none focus:ring-2 focus:ring-sky-300'
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
 function App() {
   // Formulario principal: integra validación Zod + estado RHF para todas las secciones.
@@ -122,9 +123,31 @@ function App() {
   ])
 
   const onSubmit = async (data: AffiliationFormData) => {
-    console.log('Formulario válido:', data)
-    await new Promise((resolve) => setTimeout(resolve, 600))
-    window.alert('Formulario validado correctamente (demo).')
+    try {
+      const response = await fetch(`${apiBaseUrl}/api/forms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'draft',
+          data,
+        }),
+      })
+
+      const payload = (await response.json()) as { id?: string; message?: string }
+
+      if (!response.ok) {
+        const message = payload.message ?? 'No fue posible guardar el formulario.'
+        throw new Error(message)
+      }
+
+      const formIdMessage = payload.id ? `\nID: ${payload.id}` : ''
+      window.alert(`Formulario guardado correctamente.${formIdMessage}`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado al guardar el formulario.'
+      window.alert(`Error al guardar: ${message}`)
+    }
   }
 
   const onDownloadPdf = () => {
@@ -208,7 +231,7 @@ function App() {
               disabled={isSubmitting}
               className="rounded-md bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800 disabled:opacity-60"
             >
-              {isSubmitting ? 'Validando...' : 'Guardar y continuar'}
+              {isSubmitting ? 'Guardando...' : 'Guardar y continuar'}
             </button>
           </div>
         </form>
