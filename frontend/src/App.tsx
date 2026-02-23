@@ -58,8 +58,10 @@ function App() {
             errors={errors}
             checklistInputClassName={checklistInputClassName}
           />
-          <ConyugeSection register={register} checklistInputClassName={checklistInputClassName} />
-          <BeneficiariesSection register={register} errors={errors} />
+          <div className="space-y-0">
+            <ConyugeSection register={register} checklistInputClassName={checklistInputClassName} />
+            <BeneficiariesSection register={register} errors={errors} />
+          </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <button
