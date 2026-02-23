@@ -55,3 +55,26 @@
     outline-offset: 1px;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  body {
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-page-break {
+    break-before: page;
+    page-break-before: always;
+    margin-top: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

@@ -1,73 +1,108 @@
-# React + TypeScript + Vite
+# Frontend - Formulario EPS (Réplica digital)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación React + TypeScript que replica un formulario físico de EPS en formato web, manteniendo la distribución visual por secciones, casillas y bloques tabulares.
 
-Currently, two official plugins are available:
+## Objetivo
+- Replicar fielmente el formulario físico en web.
+- Permitir diligenciamiento completo con validaciones de entrada.
+- Habilitar exportación PDF respetando el diseño y separación por hojas.
+- Dejar base preparada para backend y base de datos.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Stack
+- React 19
+- TypeScript
+- Vite
+- React Hook Form
+- Zod
+- Tailwind CSS
 
-## React Compiler
+## Scripts
+- `npm run dev`: entorno de desarrollo.
+- `npm run build`: compilación TypeScript + build producción.
+- `npm run preview`: vista previa de build.
+- `npm run lint`: validación de lint.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Estructura clave
+- `src/App.tsx`
+  - Configuración principal del formulario.
+  - Sanitización global por tipo de campo (solo letras / solo números).
+  - Cálculo automático de `Total Anexos`.
+  - Botón `Descargar PDF` vía `window.print()`.
 
-## Expanding the ESLint configuration
+- `src/modules/epsForm/sections/`
+  - Secciones visuales del formulario (I a XII y bloques finales).
+  - Componente principal actual: `BeneficiariesSection.tsx` (incluye gran parte de la hoja 2).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `src/modules/epsForm/schema/affiliationSchema.ts`
+  - Esquema Zod de todo el formulario.
+  - `defaultValues` completos.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- `src/modules/epsForm/utils/inputSanitizers.ts`
+  - Reglas para detectar campos alfabéticos y numéricos.
+  - Limpieza en tiempo real para evitar entradas inválidas.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- `src/modules/epsForm/config/catalogs.ts`
+  - Catálogos centralizados (base para conexión futura a backend).
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Funcionalidad implementada
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 1) Validación de entrada en tiempo real
+- Campos alfabéticos: bloquean números y símbolos no permitidos.
+- Campos numéricos: bloquean letras.
+- Mantiene coherencia entre UI y datos enviados.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 2) Bloques replicados del formulario
+- Secciones de identificación, complementarios, núcleo familiar y beneficiarios.
+- Secciones de aportante, novedades, declaraciones, anexos, entidad territorial y funcionario.
+- Bloques de firmas, observaciones y celdas administrativas finales.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 3) Firmas y anexos de imagen
+- Firma por carga de imagen (`PNG/JPG`) en:
+  - firma del cotizante,
+  - firma del aportante,
+  - firma del funcionario (campo 95).
+- Carga de imagen para:
+  - sello de radicación,
+  - sticker de procesamiento.
+- Incluye preview y botón para limpiar cada imagen.
+
+### 4) Sección X. Anexos
+- Cantidad de documentos de identidad anexos con campos numéricos:
+  - `CN`, `RC`, `TI`, `CC`, `CE`, `PA`, `CD`, `SC`, `PT`.
+- Ítems `83` a `91` con casilla de verificación.
+- `Total Anexos` automático:
+  - suma de cantidades numéricas,
+  - +1 por cada casilla marcada en 83-91.
+
+### 5) Exportación PDF
+- Botón `Descargar PDF` en `App`.
+- Usa impresión del navegador para `Guardar como PDF`.
+- Estilos de impresión activos:
+  - formato A4,
+  - ajuste de color,
+  - ocultar controles (`.no-print`),
+  - salto de página entre hoja 1 y hoja 2 (`.print-page-break`).
+
+## Flujo recomendado de uso
+1. Diligenciar formulario.
+2. Cargar firmas/sello/sticker si aplica.
+3. Revisar totales automáticos (anexos).
+4. Clic en `Descargar PDF`.
+5. En el diálogo del navegador elegir `Guardar como PDF`.
+
+## Estado de backend/BD
+Actualmente el proyecto está orientado a frontend local (sin persistencia remota).  
+Está preparado para conectar backend en una siguiente fase:
+- catálogos por API,
+- guardado de formularios,
+- auditoría,
+- generación PDF servidor-side (si se requiere estandarización máxima).
+
+## Notas de mantenimiento
+- Mantener consistencia visual: bordes, paleta `sky`, tipografías compactas.
+- Evitar cambios estructurales en tablas si no provienen del formulario físico.
+- Cualquier nuevo campo debe reflejarse en:
+  1) UI,
+  2) esquema Zod,
+  3) `defaultValues`,
+  4) sanitizadores (si aplica).
