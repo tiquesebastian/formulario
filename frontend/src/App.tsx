@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { defaultValues, type AffiliationFormData, affiliationSchema } from './modules/epsForm/schema/affiliationSchema'
@@ -19,6 +19,8 @@ const checklistInputClassName = 'check-symbol focus:outline-none focus:ring-2 fo
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
 function App() {
+  const radioDeselectRef = useRef<{ name: string; value: string } | null>(null)
+
   // Formulario principal: integra validación Zod + estado RHF para todas las secciones.
   const {
     register,
@@ -181,12 +183,43 @@ function App() {
     }
   }
 
+  const handleRadioMouseDownCapture = (event: React.MouseEvent<HTMLFormElement>) => {
+    const target = event.target
+    if (!(target instanceof HTMLInputElement)) return
+    if (target.type !== 'radio') return
+    if (!target.classList.contains('check-symbol')) return
+
+    radioDeselectRef.current = target.checked
+      ? { name: target.name, value: target.value }
+      : null
+  }
+
+  const handleRadioClickCapture = (event: React.MouseEvent<HTMLFormElement>) => {
+    const target = event.target
+    if (!(target instanceof HTMLInputElement)) return
+    if (target.type !== 'radio') return
+    if (!target.classList.contains('check-symbol')) return
+
+    const intent = radioDeselectRef.current
+    if (!intent) return
+
+    const isSameOption = intent.name === target.name && intent.value === target.value
+    if (!isSameOption) return
+
+    target.checked = false
+    target.dispatchEvent(new Event('input', { bubbles: true }))
+    target.dispatchEvent(new Event('change', { bubbles: true }))
+    radioDeselectRef.current = null
+  }
+
   return (
     <main className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 lg:py-8">
       <section className="overflow-hidden rounded-lg border border-sky-300 bg-white shadow-sm">
         <form
           className="space-y-4 p-3 sm:p-5"
           onSubmit={handleSubmit(onSubmit)}
+          onMouseDownCapture={handleRadioMouseDownCapture}
+          onClickCapture={handleRadioClickCapture}
           onChangeCapture={handleSanitizeOnChangeCapture}
           noValidate
         >

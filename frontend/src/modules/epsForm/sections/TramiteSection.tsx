@@ -40,43 +40,49 @@ export function TramiteSection({ register, errors, checklistInputClassName }: Tr
 
         <fieldset className="space-y-1 border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <legend className="font-semibold">2. Tipo de Afiliación</legend>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-            <label className="inline-flex items-center gap-1">
+          <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1">
+            <label className="inline-flex items-start gap-1">
               <input
                 type="radio"
                 value="CotizanteCabezaFamilia"
                 className={checklistInputClassName}
                 {...register('tipoAfiliacion')}
               />
-              Cotizante o Cabeza de Familia
+              <span>
+                A. Individual: - Cotizante o Cabeza de Familia
+                <br />
+                - Beneficiario o Afiliado adicional
+              </span>
             </label>
-            <label className="inline-flex items-center gap-1">
-              <input
-                type="radio"
-                value="BeneficiarioAdicional"
-                className={checklistInputClassName}
-                {...register('tipoAfiliacion')}
-              />
-              Beneficiario o Afiliado adicional
-            </label>
-            <label className="inline-flex items-center gap-1">
-              <input
-                type="radio"
-                value="Colectiva"
-                className={checklistInputClassName}
-                {...register('tipoAfiliacion')}
-              />{' '}
-              B. Colectiva
-            </label>
-            <label className="inline-flex items-center gap-1">
-              <input
-                type="radio"
-                value="DeOficio"
-                className={checklistInputClassName}
-                {...register('tipoAfiliacion')}
-              />{' '}
-              D. De Oficio
-            </label>
+            <div className="space-y-1">
+              <label className="inline-flex items-center gap-1">
+                <input
+                  type="radio"
+                  value="Colectiva"
+                  className={checklistInputClassName}
+                  {...register('tipoAfiliacion')}
+                />
+                B. Colectiva
+              </label>
+              <label className="inline-flex items-center gap-1">
+                <input
+                  type="radio"
+                  value="Institucional"
+                  className={checklistInputClassName}
+                  {...register('tipoAfiliacion')}
+                />{' '}
+                C. Institucional
+              </label>
+              <label className="inline-flex items-center gap-1">
+                <input
+                  type="radio"
+                  value="DeOficio"
+                  className={checklistInputClassName}
+                  {...register('tipoAfiliacion')}
+                />{' '}
+                D. De Oficio
+              </label>
+            </div>
           </div>
         </fieldset>
 

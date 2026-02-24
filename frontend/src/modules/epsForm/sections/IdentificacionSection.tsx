@@ -1,6 +1,11 @@
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 import { FieldError } from '../components/FieldError'
 import type { AffiliationFormData } from '../schema/affiliationSchema'
+import {
+  dateCatalog,
+  departmentCatalog,
+  documentTypeCatalog,
+} from '../config/catalogs'
 
 interface IdentificacionSectionProps {
   register: UseFormRegister<AffiliationFormData>
@@ -71,10 +76,11 @@ export function IdentificacionSection({
             className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('tipoDocumento')}
           >
-            <option value="CC">CC</option>
-            <option value="TI">TI</option>
-            <option value="CE">CE</option>
-            <option value="PA">PA</option>
+            {documentTypeCatalog.map((documentType) => (
+              <option key={documentType.value} value={documentType.value}>
+                {documentType.label}
+              </option>
+            ))}
           </select>
           <FieldError message={errors.tipoDocumento?.message} />
         </label>
@@ -157,10 +163,17 @@ export function IdentificacionSection({
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">Departamento</span>
-          <input
-            className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
+          <select
+            className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('nacimientoDepartamento')}
-          />
+          >
+            <option value="">Seleccione</option>
+            {departmentCatalog.map((department) => (
+              <option key={department.value} value={department.value}>
+                {department.label}
+              </option>
+            ))}
+          </select>
           <FieldError message={errors.nacimientoDepartamento?.message} />
         </label>
 
@@ -175,28 +188,40 @@ export function IdentificacionSection({
 
         <fieldset className="p-2 text-[11px] text-sky-900">
           <legend className="font-semibold">15. Fecha de nacimiento</legend>
-          <div className="mt-1 flex items-center gap-1">
-            <input
-              maxLength={2}
-              inputMode="numeric"
-              placeholder="DD"
-              className="h-8 w-10 rounded border border-sky-300 text-center text-xs outline-none ring-sky-400 focus:ring"
+          <div className="mt-1 grid grid-cols-[1fr_1fr_1.4fr] gap-1">
+            <select
+              className="h-8 w-full rounded border border-sky-300 bg-white px-1 text-center text-xs outline-none ring-sky-400 focus:ring"
               {...register('fechaNacimientoDia')}
-            />
-            <input
-              maxLength={2}
-              inputMode="numeric"
-              placeholder="MM"
-              className="h-8 w-10 rounded border border-sky-300 text-center text-xs outline-none ring-sky-400 focus:ring"
+            >
+              <option value="">DD</option>
+              {dateCatalog.days.map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </select>
+            <select
+              className="h-8 w-full rounded border border-sky-300 bg-white px-1 text-center text-xs outline-none ring-sky-400 focus:ring"
               {...register('fechaNacimientoMes')}
-            />
-            <input
-              maxLength={4}
-              inputMode="numeric"
-              placeholder="AAAA"
-              className="h-8 w-14 rounded border border-sky-300 text-center text-xs outline-none ring-sky-400 focus:ring"
+            >
+              <option value="">MM</option>
+              {dateCatalog.months.map((month) => (
+                <option key={month} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+            <select
+              className="h-8 w-full rounded border border-sky-300 bg-white px-1 text-center text-xs outline-none ring-sky-400 focus:ring"
               {...register('fechaNacimientoAnio')}
-            />
+            >
+              <option value="">AAAA</option>
+              {dateCatalog.years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
           </div>
         </fieldset>
       </div>

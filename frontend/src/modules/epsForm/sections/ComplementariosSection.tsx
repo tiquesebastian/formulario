@@ -1,6 +1,10 @@
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 import { FieldError } from '../components/FieldError'
 import type { AffiliationFormData } from '../schema/affiliationSchema'
+import {
+  complementaryCatalog,
+  departmentCatalog,
+} from '../config/catalogs'
 
 interface ComplementariosSectionProps {
   register: UseFormRegister<AffiliationFormData>
@@ -22,10 +26,17 @@ export function ComplementariosSection({
       <div className="grid border-b border-sky-300 md:grid-cols-[1fr_1fr_1fr_1fr_1.2fr_1.2fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">16. Etnia</span>
-          <input
-            className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
+          <select
+            className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('etnia')}
-          />
+          >
+            <option value="">Seleccione</option>
+            {complementaryCatalog.etnia.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
@@ -88,26 +99,47 @@ export function ComplementariosSection({
       <div className="grid border-b border-sky-300 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">21. Grupo de población especial</span>
-          <input
-            className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
+          <select
+            className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('grupoPoblacionEspecial')}
-          />
+          >
+            <option value="">Seleccione</option>
+            {complementaryCatalog.grupoPoblacionEspecial.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">22. Administradora de Riesgos Laborales - ARL</span>
-          <input
-            className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
+          <select
+            className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('administradoraRiesgosLaborales')}
-          />
+          >
+            <option value="">Seleccione</option>
+            {complementaryCatalog.arl.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">23. Administradora de Pensiones</span>
-          <input
-            className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
+          <select
+            className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('administradoraPensiones')}
-          />
+          >
+            <option value="">Seleccione</option>
+            {complementaryCatalog.administradoraPensiones.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
@@ -172,10 +204,17 @@ export function ComplementariosSection({
       <div className="grid md:grid-cols-[1fr_1fr_1fr_1.2fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">Departamento</span>
-          <input
-            className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
+          <select
+            className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('departamentoResidencia')}
-          />
+          >
+            <option value="">Seleccione</option>
+            {departmentCatalog.map((department) => (
+              <option key={department.value} value={department.value}>
+                {department.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">

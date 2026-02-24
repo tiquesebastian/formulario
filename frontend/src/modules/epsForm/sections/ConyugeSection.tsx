@@ -1,5 +1,6 @@
 import type { UseFormRegister } from 'react-hook-form'
 import type { AffiliationFormData } from '../schema/affiliationSchema'
+import { documentTypeCatalog } from '../config/catalogs'
 
 interface ConyugeSectionProps {
   register: UseFormRegister<AffiliationFormData>
@@ -61,10 +62,11 @@ export function ConyugeSection({ register, checklistInputClassName }: ConyugeSec
             className="mt-0.5 h-7 w-full rounded border border-sky-300 bg-white px-1.5 text-[10px] outline-none ring-sky-400 focus:ring"
             {...register('conyugeTipoDocumento')}
           >
-            <option value="CC">CC</option>
-            <option value="TI">TI</option>
-            <option value="CE">CE</option>
-            <option value="PA">PA</option>
+            {documentTypeCatalog.map((documentType) => (
+              <option key={documentType.value} value={documentType.value}>
+                {documentType.label}
+              </option>
+            ))}
           </select>
         </label>
 

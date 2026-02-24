@@ -2,7 +2,13 @@ import type { ChangeEvent } from 'react'
 import type { UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { FieldError } from '../components/FieldError';
 import type { AffiliationFormData } from '../schema/affiliationSchema';
-import { dateCatalog, departmentCatalog, sisbenClassCatalog } from '../config/catalogs';
+import {
+  complementaryCatalog,
+  dateCatalog,
+  departmentCatalog,
+  documentTypeCatalog,
+  sisbenClassCatalog,
+} from '../config/catalogs';
 
 interface BeneficiariesSectionProps {
   register: UseFormRegister<AffiliationFormData>;
@@ -217,7 +223,6 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
               <th className="border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. País nacimiento</th>
               <th className="min-w-[120px] border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Departamento (desplegable)</th>
               <th className="border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Municipio</th>
-              <th className="min-w-[130px] border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Segundo departamento (desplegable)</th>
               <th className="min-w-[150px] border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">42. Fecha de nacimiento (desplegable)</th>
             </tr>
           </thead>
@@ -233,10 +238,11 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                     className="w-full px-1 py-0.5 border-0 text-[9px]"
                   >
                     <option value="">-</option>
-                    <option value="CC">CC</option>
-                    <option value="CE">CE</option>
-                    <option value="PA">PA</option>
-                    <option value="RC">RC</option>
+                      {documentTypeCatalog.map((documentType) => (
+                        <option key={documentType.value} value={documentType.value}>
+                          {documentType.value}
+                        </option>
+                      ))}
                   </select>
                 </td>
 
@@ -347,21 +353,6 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                   />
                 </td>
 
-                {/* Segundo Departamento Nacimiento */}
-                <td className="border border-sky-300 p-0">
-                  <select
-                    {...register(`beneficiario${b}SegundoDepartamentoBirth` as keyof AffiliationFormData)}
-                    className="w-full px-1 py-0.5 border-0 text-[9px]"
-                  >
-                    <option value="">-</option>
-                    {departmentCatalog.map((department) => (
-                      <option key={`second-${department.value}`} value={department.value}>
-                        {department.label}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-
                 {/* Fecha Nacimiento */}
                 <td className="border border-sky-300 px-1 py-0.5">
                   <div className="flex items-center gap-1">
@@ -448,11 +439,17 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                 </td>
 
                 <td className="border border-sky-300 bg-slate-100 p-0">
-                  <input
-                    type="text"
+                  <select
                     {...register(`beneficiario${b}Etnia` as keyof AffiliationFormData)}
                     className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900"
-                  />
+                  >
+                    <option value="">-</option>
+                    {complementaryCatalog.etnia.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.value}
+                      </option>
+                    ))}
+                  </select>
                 </td>
 
                 <td className="border border-sky-300 bg-slate-100 p-0">
@@ -464,11 +461,17 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                 </td>
 
                 <td className="border border-sky-300 bg-slate-100 p-0">
-                  <input
-                    type="text"
+                  <select
                     {...register(`beneficiario${b}GrupoPoblacionEspecial` as keyof AffiliationFormData)}
                     className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[8px] text-sky-900"
-                  />
+                  >
+                    <option value="">-</option>
+                    {complementaryCatalog.grupoPoblacionEspecial.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.value}
+                      </option>
+                    ))}
+                  </select>
                 </td>
 
                 <td className="border border-sky-300 bg-slate-100 px-1 py-0.5 text-[8px] text-sky-900">
@@ -602,11 +605,17 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                 <td className="border border-sky-300 bg-slate-200 px-1 py-0.5 font-bold text-center text-[9px] text-sky-900">{b}</td>
 
                 <td className="border border-sky-300 bg-slate-100 p-0">
-                  <input
-                    type="text"
+                  <select
                     {...register(`beneficiario${b}Departamento` as keyof AffiliationFormData)}
                     className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900"
-                  />
+                  >
+                    <option value="">-</option>
+                    {departmentCatalog.map((department) => (
+                      <option key={`res-${b}-${department.value}`} value={department.value}>
+                        {department.label}
+                      </option>
+                    ))}
+                  </select>
                 </td>
 
                 <td className="border border-sky-300 bg-slate-100 p-0">
@@ -826,11 +835,11 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                   className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900"
                 >
                   <option value="">-</option>
-                  <option value="CC">CC</option>
-                  <option value="TI">TI</option>
-                  <option value="CE">CE</option>
-                  <option value="PA">PA</option>
-                  <option value="NIT">NIT</option>
+                  {documentTypeCatalog.map((documentType) => (
+                    <option key={`aportante-${documentType.value}`} value={documentType.value}>
+                      {documentType.label}
+                    </option>
+                  ))}
                 </select>
               </td>
               <td colSpan={2} className="border border-sky-300 bg-slate-100 p-0">
@@ -905,11 +914,17 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                 />
               </td>
               <td colSpan={3} className="border border-sky-300 bg-slate-100 p-0">
-                <input
-                  type="text"
+                <select
                   {...register('aportanteDepartamento')}
                   className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900"
-                />
+                >
+                  <option value="">-</option>
+                  {departmentCatalog.map((department) => (
+                    <option key={`aportante-dep-${department.value}`} value={department.value}>
+                      {department.label}
+                    </option>
+                  ))}
+                </select>
               </td>
               <td colSpan={3} className="border border-sky-300 bg-slate-100 p-0">
                 <input
@@ -1042,10 +1057,11 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
               <td colSpan={2} className="border border-sky-300 bg-slate-100 p-0">
                 <select {...register('novedadTipoDocumento')} className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900">
                   <option value="">-</option>
-                  <option value="CC">CC</option>
-                  <option value="TI">TI</option>
-                  <option value="CE">CE</option>
-                  <option value="PA">PA</option>
+                  {documentTypeCatalog.map((documentType) => (
+                    <option key={`novedad-doc-${documentType.value}`} value={documentType.value}>
+                      {documentType.label}
+                    </option>
+                  ))}
                 </select>
               </td>
               <td colSpan={2} className="border border-sky-300 bg-slate-100 p-0">
@@ -1080,9 +1096,24 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
               </td>
               <td colSpan={3} className="border border-sky-300 bg-slate-100 px-1 py-0.5">
                 <div className="flex items-center gap-1">
-                  <input maxLength={2} inputMode="numeric" placeholder="DD" {...register('novedadFechaNacimientoDia')} className="h-5 w-8 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
-                  <input maxLength={2} inputMode="numeric" placeholder="MM" {...register('novedadFechaNacimientoMes')} className="h-5 w-8 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
-                  <input maxLength={4} inputMode="numeric" placeholder="AAAA" {...register('novedadFechaNacimientoAnio')} className="h-5 w-11 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
+                  <select {...register('novedadFechaNacimientoDia')} className="h-5 w-8 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">DD</option>
+                    {dateCatalog.days.map((day) => (
+                      <option key={`nfd-${day}`} value={day}>{day}</option>
+                    ))}
+                  </select>
+                  <select {...register('novedadFechaNacimientoMes')} className="h-5 w-8 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">MM</option>
+                    {dateCatalog.months.map((month) => (
+                      <option key={`nfm-${month}`} value={month}>{month}</option>
+                    ))}
+                  </select>
+                  <select {...register('novedadFechaNacimientoAnio')} className="h-5 w-11 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">AAAA</option>
+                    {dateCatalog.years.map((year) => (
+                      <option key={`nfy-${year}`} value={year}>{year}</option>
+                    ))}
+                  </select>
                 </div>
               </td>
             </tr>
@@ -1100,9 +1131,24 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
               </td>
               <td colSpan={2} className="border border-sky-300 bg-slate-100 px-1 py-0.5">
                 <div className="flex items-center gap-1">
-                  <input maxLength={2} inputMode="numeric" placeholder="DD" {...register('novedadFechaDia')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
-                  <input maxLength={2} inputMode="numeric" placeholder="MM" {...register('novedadFechaMes')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
-                  <input maxLength={4} inputMode="numeric" placeholder="AAAA" {...register('novedadFechaAnio')} className="h-5 w-10 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
+                  <select {...register('novedadFechaDia')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">DD</option>
+                    {dateCatalog.days.map((day) => (
+                      <option key={`nd-${day}`} value={day}>{day}</option>
+                    ))}
+                  </select>
+                  <select {...register('novedadFechaMes')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">MM</option>
+                    {dateCatalog.months.map((month) => (
+                      <option key={`nm-${month}`} value={month}>{month}</option>
+                    ))}
+                  </select>
+                  <select {...register('novedadFechaAnio')} className="h-5 w-10 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">AAAA</option>
+                    {dateCatalog.years.map((year) => (
+                      <option key={`ny-${year}`} value={year}>{year}</option>
+                    ))}
+                  </select>
                 </div>
               </td>
               <td colSpan={2} className="border border-sky-300 bg-slate-100 p-0">
@@ -1189,10 +1235,11 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
               <td colSpan={2} className="border border-sky-300 bg-slate-100 p-0">
                 <select {...register('contribSolidariaTipoDocumento')} className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900">
                   <option value="">-</option>
-                  <option value="CC">CC</option>
-                  <option value="TI">TI</option>
-                  <option value="CE">CE</option>
-                  <option value="PA">PA</option>
+                  {documentTypeCatalog.map((documentType) => (
+                    <option key={`solidaria-doc-${documentType.value}`} value={documentType.value}>
+                      {documentType.label}
+                    </option>
+                  ))}
                 </select>
               </td>
               <td colSpan={2} className="border border-sky-300 bg-slate-100 p-0">
@@ -1511,10 +1558,11 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
               <td colSpan={2} className="border border-sky-300 bg-slate-100 p-0">
                 <select {...register('funcionarioTipoDocumento')} className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900">
                   <option value="">-</option>
-                  <option value="CC">CC</option>
-                  <option value="TI">TI</option>
-                  <option value="CE">CE</option>
-                  <option value="PA">PA</option>
+                  {documentTypeCatalog.map((documentType) => (
+                    <option key={`func-doc-${documentType.value}`} value={documentType.value}>
+                      {documentType.label}
+                    </option>
+                  ))}
                 </select>
               </td>
               <td colSpan={2} className="border border-sky-300 bg-slate-100 p-0">
@@ -1543,17 +1591,47 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                 </div>
               </td>
               <td colSpan={2} className="border border-sky-300 bg-slate-100 px-1 py-0.5">
-                <div className="flex items-center gap-1">
-                  <input maxLength={2} inputMode="numeric" placeholder="DD" {...register('funcionarioFechaRadicacionDia')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
-                  <input maxLength={2} inputMode="numeric" placeholder="MM" {...register('funcionarioFechaRadicacionMes')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
-                  <input maxLength={4} inputMode="numeric" placeholder="AAAA" {...register('funcionarioFechaRadicacionAnio')} className="h-5 w-10 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
+                <div className="grid grid-cols-3 gap-1">
+                  <select {...register('funcionarioFechaRadicacionDia')} className="h-5 w-full border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">DD</option>
+                    {dateCatalog.days.map((day) => (
+                      <option key={`frd-${day}`} value={day}>{day}</option>
+                    ))}
+                  </select>
+                  <select {...register('funcionarioFechaRadicacionMes')} className="h-5 w-full border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">MM</option>
+                    {dateCatalog.months.map((month) => (
+                      <option key={`frm-${month}`} value={month}>{month}</option>
+                    ))}
+                  </select>
+                  <select {...register('funcionarioFechaRadicacionAnio')} className="h-5 w-full border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">AAAA</option>
+                    {dateCatalog.years.map((year) => (
+                      <option key={`fry-${year}`} value={year}>{year}</option>
+                    ))}
+                  </select>
                 </div>
               </td>
               <td colSpan={2} className="border border-sky-300 bg-slate-100 px-1 py-0.5">
-                <div className="flex items-center gap-1">
-                  <input maxLength={2} inputMode="numeric" placeholder="DD" {...register('funcionarioFechaValidacionDia')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
-                  <input maxLength={2} inputMode="numeric" placeholder="MM" {...register('funcionarioFechaValidacionMes')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
-                  <input maxLength={4} inputMode="numeric" placeholder="AAAA" {...register('funcionarioFechaValidacionAnio')} className="h-5 w-10 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900" />
+                <div className="grid grid-cols-3 gap-1">
+                  <select {...register('funcionarioFechaValidacionDia')} className="h-5 w-full border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">DD</option>
+                    {dateCatalog.days.map((day) => (
+                      <option key={`fvd-${day}`} value={day}>{day}</option>
+                    ))}
+                  </select>
+                  <select {...register('funcionarioFechaValidacionMes')} className="h-5 w-full border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">MM</option>
+                    {dateCatalog.months.map((month) => (
+                      <option key={`fvm-${month}`} value={month}>{month}</option>
+                    ))}
+                  </select>
+                  <select {...register('funcionarioFechaValidacionAnio')} className="h-5 w-full border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                    <option value="">AAAA</option>
+                    {dateCatalog.years.map((year) => (
+                      <option key={`fvy-${year}`} value={year}>{year}</option>
+                    ))}
+                  </select>
                 </div>
               </td>
             </tr>

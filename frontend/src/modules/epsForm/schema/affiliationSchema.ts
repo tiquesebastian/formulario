@@ -32,7 +32,7 @@ export const affiliationSchema = z.object({
     .string()
     .min(2, 'Ingrese al menos 2 caracteres')
     .regex(namePattern, 'Solo se permiten letras y espacios'),
-  tipoDocumento: z.enum(['CC', 'TI', 'CE', 'PA']),
+  tipoDocumento: z.enum(['CN', 'MS', 'RC', 'TI', 'CC', 'CE', 'SC', 'PA', 'CD', 'PE', 'AS', 'PT']),
   numeroDocumento: z
     .string()
     .min(6, 'Debe tener mínimo 6 dígitos')
@@ -74,7 +74,7 @@ export const affiliationSchema = z.object({
   conyugeSegundoApellido: z.string().optional(),
   conyugePrimerNombre: z.string().optional(),
   conyugeSegundoNombre: z.string().optional(),
-  conyugeTipoDocumento: z.enum(['CC', 'TI', 'CE', 'PA']),
+  conyugeTipoDocumento: z.enum(['CN', 'MS', 'RC', 'TI', 'CC', 'CE', 'SC', 'PA', 'CD', 'PE', 'AS', 'PT']),
   conyugeNumeroDocumento: z.string().optional(),
   conyugeSexoBiologico: z.enum(['F', 'M']),
   conyugeSexoIdentificacion: z.enum(['F', 'M', 'T', 'NB', 'Otro']),
