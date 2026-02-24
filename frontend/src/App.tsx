@@ -214,9 +214,9 @@ function App() {
 
   return (
     <main className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 lg:py-8">
-      <section className="overflow-hidden rounded-lg border border-sky-300 bg-white shadow-sm">
+      <section className="print-shell overflow-hidden rounded-lg border border-sky-300 bg-white shadow-sm">
         <form
-          className="space-y-4 p-3 sm:p-5"
+          className="print-form space-y-4 p-3 sm:p-5"
           onSubmit={handleSubmit(onSubmit)}
           onMouseDownCapture={handleRadioMouseDownCapture}
           onClickCapture={handleRadioClickCapture}

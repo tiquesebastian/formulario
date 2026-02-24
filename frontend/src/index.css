@@ -59,7 +59,16 @@
 @media print {
   @page {
     size: A4;
-    margin: 10mm;
+    margin: 6mm;
+  }
+
+  html,
+  body,
+  #root {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: auto;
+    background: #fff;
   }
 
   body {
@@ -68,10 +77,53 @@
     print-color-adjust: exact;
   }
 
+  .print-shell {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .print-form {
+    padding: 1.5mm !important;
+    zoom: 0.70;
+    overflow: visible !important;
+  }
+
+  .print-form,
+  .print-form * {
+    line-height: 1.05 !important;
+  }
+
+  .print-form h1 {
+    font-size: 14px !important;
+    line-height: 1.1 !important;
+  }
+
+  .print-form table th,
+  .print-form table td {
+    padding-top: 0.45mm !important;
+    padding-bottom: 0.45mm !important;
+  }
+
+  .print-form input,
+  .print-form select,
+  .print-form textarea {
+    min-height: 0 !important;
+    height: 4.6mm !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .print-form img {
+    max-height: 14mm !important;
+    object-fit: contain;
+  }
+
   .print-page-break {
-    break-before: page;
-    page-break-before: always;
-    margin-top: 0;
+    break-before: auto;
+    page-break-before: auto;
+    margin-top: 0 !important;
   }
 
   .no-print {
