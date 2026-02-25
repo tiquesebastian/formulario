@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+// Patrón base para validar nombres y textos personales en español.
 const namePattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/
 
 // Esquema fuente de verdad del formulario EPS: define tipos, validaciones y campos opcionales.

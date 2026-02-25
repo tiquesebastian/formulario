@@ -46,6 +46,11 @@ Aplicación React + TypeScript que replica un formulario físico de EPS en forma
 
 ## Funcionalidad implementada
 
+### 0) Estado funcional actual
+- Frontend conectado a backend (`VITE_API_BASE_URL`) para guardar y consultar formularios.
+- Flujo de guardado en UI: crea (`POST`) si no hay ID cargado y actualiza (`PUT`) cuando ya existe ID.
+- Consulta por ID desde la UI para reabrir formularios previamente guardados.
+
 ### 1) Validación de entrada en tiempo real
 - Campos alfabéticos: bloquean números y símbolos no permitidos.
 - Campos numéricos: bloquean letras.
@@ -91,12 +96,12 @@ Aplicación React + TypeScript que replica un formulario físico de EPS en forma
 5. En el diálogo del navegador elegir `Guardar como PDF`.
 
 ## Estado de backend/BD
-Actualmente el proyecto está orientado a frontend local (sin persistencia remota).  
-Está preparado para conectar backend en una siguiente fase:
-- catálogos por API,
-- guardado de formularios,
-- auditoría,
-- generación PDF servidor-side (si se requiere estandarización máxima).
+El frontend ya está integrado con backend y persistencia en Supabase:
+- Guardado de formularios con API REST.
+- Reapertura por ID (UUID).
+- Actualización de formularios existentes.
+
+Para detalles de API, validaciones server-side y códigos de error, ver `.vscode/README.md`.
 
 ## Notas de mantenimiento
 - Mantener consistencia visual: bordes, paleta `sky`, tipografías compactas.

@@ -1,3 +1,4 @@
+// Catálogos maestros de opciones para selects del formulario EPS.
 export interface CatalogOption {
   value: string
   label: string

@@ -1,6 +1,8 @@
 import type { UseFormRegister } from 'react-hook-form'
 import type { AffiliationFormData } from '../schema/affiliationSchema'
-import { documentTypeCatalog } from '../config/catalogs'
+import { dateCatalog, departmentCatalog, documentTypeCatalog } from '../config/catalogs'
+
+// Sección IV (cónyuge): bloque de identificación del compañero(a) permanente.
 
 interface ConyugeSectionProps {
   register: UseFormRegister<AffiliationFormData>
@@ -57,7 +59,7 @@ export function ConyugeSection({ register, checklistInputClassName }: ConyugeSec
 
       <div className="grid border-b border-sky-300 md:grid-cols-[1fr_1fr_1fr_1.5fr_1fr]">
         <label className="border-r border-sky-300 p-1 text-[10px] text-sky-900">
-          <span className="block font-semibold">28. Tipo de documento de identidad</span>
+          <span className="block font-semibold">28. Tipo de documento de identidad *</span>
           <select
             className="mt-0.5 h-7 w-full rounded border border-sky-300 bg-white px-1.5 text-[10px] outline-none ring-sky-400 focus:ring"
             {...register('conyugeTipoDocumento')}
@@ -80,7 +82,7 @@ export function ConyugeSection({ register, checklistInputClassName }: ConyugeSec
         </label>
 
         <fieldset className="border-r border-sky-300 p-1 text-[10px] text-sky-900">
-          <legend className="font-semibold">30. Sexo biológico</legend>
+          <legend className="font-semibold">30. Sexo biológico *</legend>
           <div className="mt-1 flex gap-2 text-[9px]">
             <label className="inline-flex items-center gap-1">
               <input
@@ -104,7 +106,7 @@ export function ConyugeSection({ register, checklistInputClassName }: ConyugeSec
         </fieldset>
 
         <fieldset className="border-r border-sky-300 p-1 text-[10px] text-sky-900">
-          <legend className="font-semibold">31. Sexo identificación</legend>
+          <legend className="font-semibold">31. Sexo identificación *</legend>
           <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[9px]">
             <label className="inline-flex items-center gap-1">
               <input
@@ -177,11 +179,18 @@ export function ConyugeSection({ register, checklistInputClassName }: ConyugeSec
               className="h-7 rounded border border-sky-300 px-1.5 text-[10px] outline-none ring-sky-400 focus:ring"
               {...register('conyugeNacimientoPais')}
             />
-            <input
-              placeholder="Departamento"
-              className="h-7 rounded border border-sky-300 px-1.5 text-[10px] outline-none ring-sky-400 focus:ring"
+            <select
+              // Departamento como catálogo fijo para mantener consistencia con el resto del formulario.
+              className="h-7 rounded border border-sky-300 bg-white px-1.5 text-[10px] outline-none ring-sky-400 focus:ring"
               {...register('conyugeNacimientoDepartamento')}
-            />
+            >
+              <option value="">Departamento</option>
+              {departmentCatalog.map((department) => (
+                <option key={department.value} value={department.value}>
+                  {department.label}
+                </option>
+              ))}
+            </select>
             <input
               placeholder="Municipio"
               className="h-7 rounded border border-sky-300 px-1.5 text-[10px] outline-none ring-sky-400 focus:ring"
@@ -192,28 +201,41 @@ export function ConyugeSection({ register, checklistInputClassName }: ConyugeSec
 
         <fieldset className="p-1 text-[10px] text-sky-900">
           <legend className="font-semibold">34. Fecha de nacimiento</legend>
-          <div className="mt-0.5 flex items-center gap-1">
-            <input
-              maxLength={2}
-              inputMode="numeric"
-              placeholder="DD"
-              className="h-7 w-9 rounded border border-sky-300 text-center text-[10px] outline-none ring-sky-400 focus:ring"
+          {/* Fecha separada DD/MM/AAAA para conservar el formato visual del físico. */}
+          <div className="mt-0.5 grid grid-cols-[1fr_1fr_1.3fr] gap-1">
+            <select
+              className="h-7 w-full rounded border border-sky-300 bg-white px-1 text-center text-[10px] outline-none ring-sky-400 focus:ring"
               {...register('conyugeFechaNacimientoDia')}
-            />
-            <input
-              maxLength={2}
-              inputMode="numeric"
-              placeholder="MM"
-              className="h-7 w-9 rounded border border-sky-300 text-center text-[10px] outline-none ring-sky-400 focus:ring"
+            >
+              <option value="">DD</option>
+              {dateCatalog.days.map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </select>
+            <select
+              className="h-7 w-full rounded border border-sky-300 bg-white px-1 text-center text-[10px] outline-none ring-sky-400 focus:ring"
               {...register('conyugeFechaNacimientoMes')}
-            />
-            <input
-              maxLength={4}
-              inputMode="numeric"
-              placeholder="AAAA"
-              className="h-7 w-12 rounded border border-sky-300 text-center text-[10px] outline-none ring-sky-400 focus:ring"
+            >
+              <option value="">MM</option>
+              {dateCatalog.months.map((month) => (
+                <option key={month} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+            <select
+              className="h-7 w-full rounded border border-sky-300 bg-white px-1 text-center text-[10px] outline-none ring-sky-400 focus:ring"
               {...register('conyugeFechaNacimientoAnio')}
-            />
+            >
+              <option value="">AAAA</option>
+              {dateCatalog.years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
           </div>
         </fieldset>
       </div>

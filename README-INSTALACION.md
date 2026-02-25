@@ -90,6 +90,12 @@ Si todo está bien, retorna un `id` UUID.
 3. Clic en `Guardar y continuar`.
 4. Debe mostrar confirmación de guardado e ID.
 
+## 8) Pruebas críticas recomendadas (Fase 3)
+- Consultar con ID inválido (`1` o `01`) debe responder `400`.
+- Consultar con UUID inexistente debe responder `404`.
+- Enviar datos inválidos (correo mal formado / teléfono con letras) debe responder `400`.
+- Confirmar que respuesta de error incluya `code` y `message`.
+
 ## Problemas comunes
 - `fetch failed` al guardar:
   - Revisar `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en `.vscode/.env`.

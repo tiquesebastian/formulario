@@ -10,6 +10,9 @@ import {
   sisbenClassCatalog,
 } from '../config/catalogs';
 
+// Macro-sección IV-XII: concentra los bloques tabulares extensos del formulario EPS.
+// Aquí viven las tablas más grandes del formulario (beneficiarios, novedades, anexos y datos institucionales).
+
 interface BeneficiariesSectionProps {
   register: UseFormRegister<AffiliationFormData>;
   setValue: UseFormSetValue<AffiliationFormData>;
@@ -26,6 +29,7 @@ const beneficiaryLabels = [
   { b: 'B5' },
 ];
 
+// Ítems de novedades de la columna izquierda (Parte I de novedades del formato físico).
 const novedadesColumnaIzquierda = [
   { id: 1, text: 'Modificación de datos básicos de identificación.' },
   { id: 2, text: 'Corrección de datos básicos de identificación.' },
@@ -40,6 +44,7 @@ const novedadesColumnaIzquierda = [
   { id: 11, text: 'Inscripción EPS retorno al país.' },
 ]
 
+// Ítems de novedades de la columna derecha; algunos con subopciones (movilidad/traslado).
 const novedadesColumnaDerecha = [
   { id: 12, text: 'Vinculación a una entidad autorizada para realizar afiliaciones colectivas.' },
   { id: 13, text: 'Desvinculación de una entidad autorizada para realizar afiliaciones colectivas.' },
@@ -67,6 +72,7 @@ const novedadesColumnaDerecha = [
   { id: 21, text: 'Retiro de Contribución Solidaria.' },
 ]
 
+// Texto legal/declarativo que se marca en bloque como aceptación/autorización.
 const declaracionesAutorizaciones = [
   'Declaración de dependencia económica de los beneficiarios y afiliados adicionales.',
   'Declaración de la no selección de afiliación al Régimen Contributivo, Especial o de Excepción.',
@@ -80,6 +86,7 @@ const declaracionesAutorizaciones = [
   'Aceptación de actualización del porcentaje de la contribución solidaria conforme a lo establecido en el Sisbén vigente.',
 ]
 
+// Catálogo de anexos documentales (83-91) para cálculo de total y trazabilidad.
 const anexosDetalle = [
   { id: 83, text: 'Copia del dictamen de incapacidad permanente emitido por la autoridad competente.' },
   { id: 84, text: 'Copia del registro civil de matrimonio, o de la escritura pública, acta de conciliación o sentencia judicial que declare la unión marital.' },
@@ -113,9 +120,11 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
       | 'funcionarioFirmaImagen',
   ) => {
     // Convierte imagen a base64 para almacenarla en el estado del formulario y exportarla en impresión/PDF.
+    // Esto evita depender de rutas temporales del navegador al momento de imprimir.
     const file = event.target.files?.[0]
     if (!file) return
 
+    // Solo se permiten formatos compatibles con impresión y peso razonable.
     if (!/^image\/(png|jpeg|jpg)$/i.test(file.type)) {
       window.alert('Solo se permiten imágenes de firma PNG o JPG.')
       event.target.value = ''
@@ -130,6 +139,7 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
     reader.readAsDataURL(file)
   }
 
+  // Limpia una imagen cargada (firma/sello/sticker) sin afectar otros campos.
   const clearFirma = (
     fieldName:
       | 'firmaCotizanteImagen'
@@ -240,7 +250,7 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                     <option value="">-</option>
                       {documentTypeCatalog.map((documentType) => (
                         <option key={documentType.value} value={documentType.value}>
-                          {documentType.value}
+                          {documentType.label}
                         </option>
                       ))}
                   </select>
@@ -446,7 +456,7 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                     <option value="">-</option>
                     {complementaryCatalog.etnia.map((item) => (
                       <option key={item.value} value={item.value}>
-                        {item.value}
+                        {item.label}
                       </option>
                     ))}
                   </select>
@@ -468,7 +478,7 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                     <option value="">-</option>
                     {complementaryCatalog.grupoPoblacionEspecial.map((item) => (
                       <option key={item.value} value={item.value}>
-                        {item.value}
+                        {item.label}
                       </option>
                     ))}
                   </select>
@@ -1095,20 +1105,20 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                 </div>
               </td>
               <td colSpan={3} className="border border-sky-300 bg-slate-100 px-1 py-0.5">
-                <div className="flex items-center gap-1">
-                  <select {...register('novedadFechaNacimientoDia')} className="h-5 w-8 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                <div className="flex items-center gap-1.5">
+                  <select {...register('novedadFechaNacimientoDia')} className="h-5 w-10 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
                     <option value="">DD</option>
                     {dateCatalog.days.map((day) => (
                       <option key={`nfd-${day}`} value={day}>{day}</option>
                     ))}
                   </select>
-                  <select {...register('novedadFechaNacimientoMes')} className="h-5 w-8 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                  <select {...register('novedadFechaNacimientoMes')} className="h-5 w-10 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
                     <option value="">MM</option>
                     {dateCatalog.months.map((month) => (
                       <option key={`nfm-${month}`} value={month}>{month}</option>
                     ))}
                   </select>
-                  <select {...register('novedadFechaNacimientoAnio')} className="h-5 w-11 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                  <select {...register('novedadFechaNacimientoAnio')} className="h-5 w-14 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
                     <option value="">AAAA</option>
                     {dateCatalog.years.map((year) => (
                       <option key={`nfy-${year}`} value={year}>{year}</option>

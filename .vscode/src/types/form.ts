@@ -1,3 +1,4 @@
+// Tipos de dominio para representar formularios persistidos en base de datos.
 // Estados persistidos para cada formulario en base de datos.
 export type FormRecordStatus = 'draft' | 'submitted'
 

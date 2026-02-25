@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { defaultValues, type AffiliationFormData, affiliationSchema } from './modules/epsForm/schema/affiliationSchema'
@@ -15,11 +15,20 @@ import { ComplementariosSection } from './modules/epsForm/sections/Complementari
 import { ConyugeSection } from './modules/epsForm/sections/ConyugeSection'
 import BeneficiariesSection from './modules/epsForm/sections/BeneficiariesSection'
 
+// Estilo común para radios/checkbox con apariencia de casilla del formulario físico.
 const checklistInputClassName = 'check-symbol focus:outline-none focus:ring-2 focus:ring-sky-300'
+// URL base de backend configurable por entorno.
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
 function App() {
+  // Referencia para permitir deselección al hacer clic sobre el radio ya activo.
   const radioDeselectRef = useRef<{ name: string; value: string } | null>(null)
+  // Estado del radicado actual (UUID) para alternar entre creación y actualización.
+  const [currentFormId, setCurrentFormId] = useState<string>('')
+  // Campo auxiliar para consultar y reabrir formularios guardados por ID.
+  const [lookupFormId, setLookupFormId] = useState<string>('')
+  // Indicador de carga durante la consulta de un formulario por ID.
+  const [isLoadingForm, setIsLoadingForm] = useState(false)
 
   // Formulario principal: integra validación Zod + estado RHF para todas las secciones.
   const {
@@ -27,6 +36,7 @@ function App() {
     handleSubmit,
     setValue,
     watch,
+    trigger,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<AffiliationFormData>({
@@ -35,6 +45,7 @@ function App() {
     mode: 'onBlur',
   })
 
+  // Fecha actual precargada en el encabezado (radicado) para evitar digitación manual inicial.
   const today = useMemo(() => {
     const now = new Date()
     return {
@@ -44,6 +55,7 @@ function App() {
     }
   }, [])
 
+  // Observadores de anexos: permiten recalcular el total de forma reactiva.
   const anexosDocCN = watch('anexosDocCN')
   const anexosDocRC = watch('anexosDocRC')
   const anexosDocTI = watch('anexosDocTI')
@@ -124,10 +136,19 @@ function App() {
     setValue,
   ])
 
+  // Persistencia principal del formulario.
+  // - POST cuando es un registro nuevo.
+  // - PUT cuando ya existe un UUID cargado en pantalla.
   const onSubmit = async (data: AffiliationFormData) => {
     try {
-      const response = await fetch(`${apiBaseUrl}/api/forms`, {
-        method: 'POST',
+      // Si existe ID se actualiza (PUT), si no existe se crea (POST).
+      const requestMethod = currentFormId ? 'PUT' : 'POST'
+      const requestUrl = currentFormId
+        ? `${apiBaseUrl}/api/forms/${currentFormId}`
+        : `${apiBaseUrl}/api/forms`
+
+      const response = await fetch(requestUrl, {
+        method: requestMethod,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -137,23 +158,92 @@ function App() {
         }),
       })
 
-      const payload = (await response.json()) as { id?: string; message?: string }
+      const payload = (await response.json()) as {
+        id?: string
+        message?: string
+        errors?: {
+          fieldErrors?: Record<string, string[] | undefined>
+        }
+      }
 
       if (!response.ok) {
-        const message = payload.message ?? 'No fue posible guardar el formulario.'
+        const firstFieldError = Object.entries(payload.errors?.fieldErrors ?? {}).find(
+          ([, fieldMessages]) => Array.isArray(fieldMessages) && fieldMessages.length > 0,
+        )
+        const detailedMessage = firstFieldError
+          ? `${firstFieldError[0]}: ${firstFieldError[1]?.[0]}`
+          : undefined
+        const message = detailedMessage ?? payload.message ?? 'No fue posible guardar el formulario.'
         throw new Error(message)
       }
 
-      const formIdMessage = payload.id ? `\nID: ${payload.id}` : ''
-      window.alert(`Formulario guardado correctamente.${formIdMessage}`)
+      const savedId = payload.id ?? currentFormId
+      if (savedId) {
+        setCurrentFormId(savedId)
+        setLookupFormId(savedId)
+      }
+
+      const actionMessage = currentFormId ? 'actualizado' : 'guardado'
+      const formIdMessage = savedId ? `\nID: ${savedId}` : ''
+      window.alert(`Formulario ${actionMessage} correctamente.${formIdMessage}`)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado al guardar el formulario.'
       window.alert(`Error al guardar: ${message}`)
     }
   }
 
-  const onDownloadPdf = () => {
-    // Exportación PDF mediante diálogo nativo de impresión del navegador.
+  // Reapertura por UUID: consulta backend y reemplaza estado del formulario en cliente.
+  const onLoadFormById = async () => {
+    // Reabre un formulario persistido en backend y rellena toda la UI con reset().
+    const id = lookupFormId.trim()
+    if (!id) {
+      window.alert('Ingresa un ID para consultar.')
+      return
+    }
+
+    try {
+      setIsLoadingForm(true)
+      const response = await fetch(`${apiBaseUrl}/api/forms/${id}`)
+      const payload = (await response.json()) as {
+        id?: string
+        data?: Partial<AffiliationFormData>
+        message?: string
+      }
+
+      if (!response.ok) {
+        const message = payload.message ?? 'No fue posible consultar el formulario.'
+        throw new Error(message)
+      }
+
+      // Se mezcla con defaults para garantizar claves esperadas aun cuando faltan campos en BD.
+      const loadedData = payload.data ?? {}
+      reset({ ...defaultValues, ...loadedData })
+      setCurrentFormId(payload.id ?? id)
+      setLookupFormId(payload.id ?? id)
+      window.alert(`Formulario cargado correctamente.\nID: ${payload.id ?? id}`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado al consultar el formulario.'
+      window.alert(`Error al consultar: ${message}`)
+    } finally {
+      setIsLoadingForm(false)
+    }
+  }
+
+  const onStartNewForm = () => {
+    // Reinicia formulario y limpia contexto de radicado para iniciar un registro nuevo.
+    reset(defaultValues)
+    setCurrentFormId('')
+    setLookupFormId('')
+  }
+
+  const onDownloadPdf = async () => {
+    // Exportación PDF condicionada a validación para destacar obligatorios faltantes.
+    const isValid = await trigger()
+    if (!isValid) {
+      window.alert('Completa los campos obligatorios marcados con * antes de descargar.')
+      return
+    }
+
     window.print()
   }
 
@@ -183,6 +273,7 @@ function App() {
     }
   }
 
+  // Registra la intención de clic para permitir “toggle off” en radios tipo casilla.
   const handleRadioMouseDownCapture = (event: React.MouseEvent<HTMLFormElement>) => {
     const target = event.target
     if (!(target instanceof HTMLInputElement)) return
@@ -194,6 +285,7 @@ function App() {
       : null
   }
 
+  // Si el usuario hace clic en el radio ya seleccionado, se desmarca para emular checkbox.
   const handleRadioClickCapture = (event: React.MouseEvent<HTMLFormElement>) => {
     const target = event.target
     if (!(target instanceof HTMLInputElement)) return
@@ -244,7 +336,40 @@ function App() {
             <BeneficiariesSection register={register} setValue={setValue} watch={watch} errors={errors} />
           </div>
 
+          <div className="no-print rounded-md border border-sky-200 bg-sky-50 p-3 text-xs text-sky-900">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="font-semibold">ID radicado actual</p>
+                <p className="text-sm font-bold text-sky-700">{currentFormId || 'Sin radicado aún'}</p>
+              </div>
+
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-end">
+                <label className="flex flex-col gap-1">
+                  <span className="font-semibold">Reabrir por ID</span>
+                  <input
+                    type="text"
+                    value={lookupFormId}
+                    onChange={(event) => setLookupFormId(event.target.value)}
+                    placeholder="Pega el ID"
+                    className="h-9 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring sm:w-72"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={onLoadFormById}
+                  disabled={isLoadingForm}
+                  className="h-9 rounded-md border border-sky-300 px-3 text-xs font-semibold text-sky-700 hover:bg-sky-100 disabled:opacity-60"
+                >
+                  {isLoadingForm ? 'Consultando...' : 'Consultar'}
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="no-print flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <p className="sm:mr-auto sm:self-center text-[11px] text-sky-700">
+              * Campos obligatorios para descargar.
+            </p>
             <button
               type="button"
               onClick={onDownloadPdf}
@@ -254,10 +379,10 @@ function App() {
             </button>
             <button
               type="button"
-              onClick={() => reset(defaultValues)}
+              onClick={onStartNewForm}
               className="rounded-md border border-sky-300 px-4 py-2 text-sm font-medium text-sky-700 hover:bg-sky-50"
             >
-              Limpiar formulario
+              Nuevo formulario
             </button>
             <button
               type="submit"

@@ -2,6 +2,9 @@ import cors from 'cors'
 import express from 'express'
 import { env } from './config/env.js'
 import { formRouter } from './routes/forms.routes.js'
+import { isHttpError } from './types/httpError.js'
+
+// Servidor HTTP principal de la API de formularios (Express + middlewares globales).
 
 // Punto de entrada HTTP del backend.
 const app = express()
@@ -20,8 +23,25 @@ app.use('/api/forms', formRouter)
 
 // Manejador global de errores no controlados.
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  const message = error instanceof Error ? error.message : 'Error interno'
-  res.status(500).json({ message })
+  if (error instanceof SyntaxError && 'body' in error) {
+    return res.status(400).json({
+      code: 'INVALID_JSON_BODY',
+      message: 'El cuerpo JSON de la solicitud es inválido.',
+    })
+  }
+
+  if (isHttpError(error)) {
+    return res.status(error.status).json({
+      code: error.code,
+      message: error.message,
+      details: error.details,
+    })
+  }
+
+  return res.status(500).json({
+    code: 'INTERNAL_SERVER_ERROR',
+    message: 'Error interno del servidor.',
+  })
 })
 
 // Inicio del servidor en el puerto definido por entorno.

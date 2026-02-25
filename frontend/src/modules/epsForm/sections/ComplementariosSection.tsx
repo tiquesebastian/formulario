@@ -6,6 +6,8 @@ import {
   departmentCatalog,
 } from '../config/catalogs'
 
+// Sección III: información complementaria social, geográfica y de aseguramiento.
+
 interface ComplementariosSectionProps {
   register: UseFormRegister<AffiliationFormData>
   errors: FieldErrors<AffiliationFormData>
@@ -48,7 +50,7 @@ export function ComplementariosSection({
         </label>
 
         <fieldset className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <legend className="font-semibold">18. Discapacidad</legend>
+          <legend className="font-semibold">18. Discapacidad *</legend>
           <div className="mt-1 flex gap-3 text-[10px]">
             <label className="inline-flex items-center gap-1">
               <input type="radio" value="Si" className={checklistInputClassName} {...register('discapacidad')} /> Sí
@@ -68,7 +70,7 @@ export function ComplementariosSection({
         </label>
 
         <fieldset className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <legend className="font-semibold">19. Tiene encuesta SISBÉN</legend>
+          <legend className="font-semibold">19. Tiene encuesta SISBÉN *</legend>
           <div className="mt-1 flex gap-3 text-[10px]">
             <label className="inline-flex items-center gap-1">
               <input type="radio" value="Si" className={checklistInputClassName} {...register('encuestaSisben')} /> Sí
@@ -143,7 +145,7 @@ export function ComplementariosSection({
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">24. Ingreso base de cotización - IBC</span>
+          <span className="block font-semibold">24. Ingreso base de cotización - IBC *</span>
           <input
             inputMode="numeric"
             className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
@@ -152,7 +154,7 @@ export function ComplementariosSection({
         </label>
 
         <label className="p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">25. Tarifa Contribución Solidaria</span>
+          <span className="block font-semibold">25. Tarifa Contribución Solidaria *</span>
           <input
             className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('tarifaContribucionSolidaria')}
@@ -181,7 +183,7 @@ export function ComplementariosSection({
 
       <div className="grid border-b border-sky-300 md:grid-cols-[1fr_1fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">Teléfono celular</span>
+          <span className="block font-semibold">Teléfono celular *</span>
           <input
             inputMode="numeric"
             className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
@@ -191,7 +193,7 @@ export function ComplementariosSection({
         </label>
 
         <label className="p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">Correo electrónico</span>
+          <span className="block font-semibold">Correo electrónico *</span>
           <input
             type="email"
             className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
@@ -234,7 +236,7 @@ export function ComplementariosSection({
         </label>
 
         <fieldset className="p-2 text-[11px] text-sky-900">
-          <legend className="font-semibold">Zona</legend>
+          <legend className="font-semibold">Zona *</legend>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px]">
             <label className="inline-flex items-center gap-1">
               <input

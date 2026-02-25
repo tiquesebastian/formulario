@@ -59,5 +59,23 @@ Servidor: `http://localhost:4000`
 
 ## Notas importantes
 - Este backend usa `SUPABASE_SERVICE_ROLE_KEY`; úsala solo en servidor.
-- La validación actual es estructural (Zod básico) y acepta el payload del formulario como JSON.
+- Validación server-side reforzada (Fase 3):
+  - estructura de payload,
+  - campos críticos (nombres, documento, teléfono, correo),
+  - validación de fechas,
+  - límite de tamaño de payload.
+- Errores de API estandarizados con `code` + `message`:
+  - `VALIDATION_ERROR`
+  - `INVALID_ID`
+  - `FORM_NOT_FOUND`
+  - `EMPTY_UPDATE`
+  - `INVALID_JSON_BODY`
+  - `SUPABASE_*` (falla de persistencia / disponibilidad)
 - Siguiente paso recomendado: autenticar usuarios y registrar quién creó/actualizó cada formulario.
+
+## Pruebas críticas (Fase 3)
+1. `POST /api/forms` con payload válido → `201`.
+2. `POST /api/forms` con correo/teléfono inválido → `400` (`VALIDATION_ERROR`).
+3. `GET /api/forms/:id` con ID no UUID (`1`, `01`) → `400` (`INVALID_ID`).
+4. `GET /api/forms/:id` con UUID inexistente → `404` (`FORM_NOT_FOUND`).
+5. `PUT /api/forms/:id` sin `status` ni `data` → `400` (`EMPTY_UPDATE`).

@@ -1,5 +1,7 @@
 import type { FamilyMember } from '../types/familyMember'
 
+// Componente alterno/legado para edición tabular de miembros del núcleo familiar.
+
 interface FamilyMembersSectionProps {
   familyMembers: FamilyMember[]
   addFamilyMember: () => void

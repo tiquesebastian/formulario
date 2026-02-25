@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* Hoja de estilos global: base visual, controles custom y reglas de impresión del formulario EPS. */
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -21,6 +23,7 @@
 }
 
 @layer components {
+  /* Casilla visual reutilizable para radios/checkbox estilo formulario físico. */
   .check-symbol {
     appearance: none;
     -webkit-appearance: none;
@@ -57,6 +60,7 @@
 }
 
 @media print {
+  /* Ajustes específicos de impresión para comprimir el formulario y mantener salida PDF estable. */
   @page {
     size: A4;
     margin: 6mm;
@@ -124,6 +128,19 @@
     break-before: auto;
     page-break-before: auto;
     margin-top: 0 !important;
+  }
+
+  .tramite-afiliacion-grid {
+    /* Evita huecos verticales en la sección I al imprimir en PDF. */
+    grid-template-columns: 1fr !important;
+    gap: 1mm !important;
+  }
+
+  .tramite-afiliacion-options {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1mm !important;
+    align-items: center;
   }
 
   .no-print {

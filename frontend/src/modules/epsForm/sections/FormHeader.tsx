@@ -2,6 +2,8 @@ import type { UseFormRegister } from 'react-hook-form'
 import type { AffiliationFormData } from '../schema/affiliationSchema'
 import { dateCatalog } from '../config/catalogs'
 
+// Encabezado oficial del formulario: logo, título y fecha de radicado.
+
 interface FormHeaderProps {
   register: UseFormRegister<AffiliationFormData>
   today: {

@@ -7,6 +7,8 @@ import {
   documentTypeCatalog,
 } from '../config/catalogs'
 
+// Sección II: datos básicos de identificación del afiliado principal.
+
 interface IdentificacionSectionProps {
   register: UseFormRegister<AffiliationFormData>
   errors: FieldErrors<AffiliationFormData>
@@ -29,7 +31,7 @@ export function IdentificacionSection({
 
       <div className="grid border-b border-sky-300 md:grid-cols-4">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900 md:last:border-r-0">
-          <span className="block font-semibold">8. Apellidos y nombres</span>
+          <span className="block font-semibold">8. Apellidos y nombres *</span>
           <span className="block text-[10px] text-sky-700">Primer Apellido</span>
           <input
             className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
@@ -71,7 +73,7 @@ export function IdentificacionSection({
 
       <div className="grid border-b border-sky-300 md:grid-cols-[1.2fr_1.5fr_1fr_2fr_1fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">9. Tipo de documento de identidad</span>
+          <span className="block font-semibold">9. Tipo de documento de identidad *</span>
           <select
             className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('tipoDocumento')}
@@ -86,7 +88,7 @@ export function IdentificacionSection({
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">10. Número del documento de identidad</span>
+          <span className="block font-semibold">10. Número del documento de identidad *</span>
           <input
             inputMode="numeric"
             className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
@@ -96,7 +98,7 @@ export function IdentificacionSection({
         </label>
 
         <fieldset className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <legend className="font-semibold">11. Sexo biológico</legend>
+          <legend className="font-semibold">11. Sexo biológico *</legend>
           <div className="mt-1 flex gap-3 text-[10px]">
             <label className="inline-flex items-center gap-1">
               <input type="radio" value="F" className={checklistInputClassName} {...register('sexoBiologico')} />
@@ -110,7 +112,7 @@ export function IdentificacionSection({
         </fieldset>
 
         <fieldset className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <legend className="font-semibold">12. Sexo identificación</legend>
+          <legend className="font-semibold">12. Sexo identificación *</legend>
           <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[10px]">
             <label className="inline-flex items-center gap-1">
               <input type="radio" value="F" className={checklistInputClassName} {...register('sexoIdentificacion')} /> F
@@ -142,7 +144,7 @@ export function IdentificacionSection({
         </fieldset>
 
         <label className="p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">13. Nacionalidad</span>
+          <span className="block font-semibold">13. Nacionalidad *</span>
           <input
             className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('nacionalidad')}
@@ -153,7 +155,7 @@ export function IdentificacionSection({
 
       <div className="grid border-b border-sky-300 md:grid-cols-[1fr_1fr_1fr_1fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">14. Lugar de nacimiento - País</span>
+          <span className="block font-semibold">14. Lugar de nacimiento - País *</span>
           <input
             className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('nacimientoPais')}
@@ -162,7 +164,7 @@ export function IdentificacionSection({
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">Departamento</span>
+          <span className="block font-semibold">Departamento *</span>
           <select
             className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('nacimientoDepartamento')}
@@ -178,7 +180,7 @@ export function IdentificacionSection({
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
-          <span className="block font-semibold">Municipio</span>
+          <span className="block font-semibold">Municipio *</span>
           <input
             className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
             {...register('nacimientoMunicipio')}
@@ -187,7 +189,7 @@ export function IdentificacionSection({
         </label>
 
         <fieldset className="p-2 text-[11px] text-sky-900">
-          <legend className="font-semibold">15. Fecha de nacimiento</legend>
+          <legend className="font-semibold">15. Fecha de nacimiento *</legend>
           <div className="mt-1 grid grid-cols-[1fr_1fr_1.4fr] gap-1">
             <select
               className="h-8 w-full rounded border border-sky-300 bg-white px-1 text-center text-xs outline-none ring-sky-400 focus:ring"

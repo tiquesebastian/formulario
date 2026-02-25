@@ -1,3 +1,4 @@
+// Modelo simplificado de una fila del bloque de miembros del núcleo familiar.
 export interface FamilyMember {
   id: string
   apellido1: string
@@ -18,6 +19,7 @@ export interface FamilyMember {
   fechaNacimientoAnio: string
 }
 
+// Crea una fila vacía con valores por defecto para agregar beneficiarios dinámicamente.
 export const createFamilyMember = (id: string): FamilyMember => ({
   id,
   apellido1: '',

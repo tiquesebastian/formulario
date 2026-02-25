@@ -1,5 +1,6 @@
 const lettersOnlyPattern = /[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g
 
+// Patrones de nombres de campo que deben admitir solo caracteres alfabéticos.
 const lettersFieldMatchers = [
   /Apellido/i,
   /Nombre/i,
@@ -42,6 +43,7 @@ const lettersFieldMatchers = [
   /funcionarioSegundoNombre/i,
 ]
 
+// Patrones de campos que se restringen a dígitos para mantener consistencia de captura.
 const numericFieldMatchers = [
   /Dia$/i,
   /Mes$/i,
@@ -88,10 +90,12 @@ const numericFieldMatchers = [
 
 const excludeFromAutoSanitize = [/correo/i, /direccion/i]
 
+// Limpia cualquier carácter no permitido en entradas alfabéticas.
 export function sanitizeLetters(value: string) {
   return value.replace(lettersOnlyPattern, '').replace(/\s{2,}/g, ' ')
 }
 
+// Elimina caracteres no numéricos para entradas de tipo documento, teléfono y fechas.
 export function sanitizeNumbers(value: string) {
   return value.replace(/\D+/g, '')
 }

@@ -1,6 +1,8 @@
 import dotenv from 'dotenv'
 import { z } from 'zod'
 
+// Carga y valida variables de entorno requeridas por la API.
+
 // Carga variables desde .env al iniciar el proceso, priorizando el archivo local.
 dotenv.config({ override: true })
 
