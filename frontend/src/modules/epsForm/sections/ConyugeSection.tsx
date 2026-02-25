@@ -11,7 +11,7 @@ interface ConyugeSectionProps {
 
 export function ConyugeSection({ register, checklistInputClassName }: ConyugeSectionProps) {
   return (
-    <section className="overflow-hidden border border-sky-300">
+    <section className="print-section-iv overflow-hidden border border-sky-300">
       <div className="bg-sky-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white">
         IV. Datos de identificación de los miembros del núcleo familiar
       </div>

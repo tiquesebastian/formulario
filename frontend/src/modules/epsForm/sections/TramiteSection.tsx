@@ -12,7 +12,7 @@ interface TramiteSectionProps {
 
 export function TramiteSection({ register, errors, checklistInputClassName }: TramiteSectionProps) {
   return (
-    <section className="overflow-hidden rounded-md border border-sky-300">
+    <section className="print-section-i overflow-hidden rounded-md border border-sky-300">
       <h2 className="border-b border-sky-300 bg-sky-600 px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">
         I. Datos del Trámite
       </h2>

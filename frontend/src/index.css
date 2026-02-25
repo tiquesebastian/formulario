@@ -60,10 +60,10 @@
 }
 
 @media print {
-  /* Ajustes específicos de impresión para comprimir el formulario y mantener salida PDF estable. */
+  /* Ajustes de impresión orientados a mantener apariencia similar a pantalla. */
   @page {
     size: A4;
-    margin: 6mm;
+    margin: 1mm;
   }
 
   html,
@@ -75,6 +75,11 @@
     background: #fff;
   }
 
+  html {
+    /* En print, el viewport suele quedar entre sm y md; bajar rem activa utilidades md sin tocar componentes. */
+    font-size: 14px;
+  }
+
   body {
     background: #fff;
     -webkit-print-color-adjust: exact;
@@ -82,46 +87,24 @@
   }
 
   .print-shell {
-    border: 0 !important;
-    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
     box-shadow: none !important;
     overflow: visible !important;
   }
 
   .print-form {
-    padding: 1.5mm !important;
-    zoom: 0.70;
+    width: 100% !important;
+    padding: 0 !important;
+    zoom: 0.56;
     overflow: visible !important;
   }
 
-  .print-form,
-  .print-form * {
-    line-height: 1.05 !important;
-  }
-
-  .print-form h1 {
-    font-size: 14px !important;
-    line-height: 1.1 !important;
-  }
-
-  .print-form table th,
-  .print-form table td {
-    padding-top: 0.45mm !important;
-    padding-bottom: 0.45mm !important;
-  }
-
-  .print-form input,
-  .print-form select,
-  .print-form textarea {
-    min-height: 0 !important;
-    height: 4.6mm !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-  }
-
-  .print-form img {
-    max-height: 14mm !important;
-    object-fit: contain;
+  main {
+    width: 100% !important;
+    max-width: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 
   .print-page-break {
@@ -130,16 +113,116 @@
     margin-top: 0 !important;
   }
 
-  .tramite-afiliacion-grid {
-    /* Evita huecos verticales en la sección I al imprimir en PDF. */
-    grid-template-columns: 1fr !important;
-    gap: 1mm !important;
+  /* Ajuste fino I-IV: mantener estructura similar a pantalla en impresión */
+  .print-section-i,
+  .print-section-ii,
+  .print-section-iii,
+  .print-section-iv {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
   }
 
-  .tramite-afiliacion-options {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1mm !important;
+  .print-section-i > div:nth-of-type(1) {
+    grid-template-columns: 1.2fr 2fr 1fr 1fr !important;
+  }
+
+  .print-section-i > div:nth-of-type(2) {
+    grid-template-columns: 2fr 2fr 1fr !important;
+  }
+
+  .print-section-ii > div:nth-of-type(1) {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .print-section-ii > div:nth-of-type(2) {
+    grid-template-columns: 1.2fr 1.5fr 1fr 2fr 1fr !important;
+  }
+
+  .print-section-ii > div:nth-of-type(3) {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .print-section-iii > div:nth-of-type(1) {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1.2fr 1.2fr !important;
+  }
+
+  .print-section-iii > div:nth-of-type(2) {
+    grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr !important;
+  }
+
+  .print-section-iii > div:nth-of-type(3) {
+    grid-template-columns: 2fr 1fr !important;
+  }
+
+  .print-section-iii > div:nth-of-type(4) {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .print-section-iii > div:nth-of-type(5) {
+    grid-template-columns: 1fr 1fr 1fr 1.2fr !important;
+  }
+
+  .print-section-iv > div:nth-of-type(3) {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .print-section-iv > div:nth-of-type(4) {
+    grid-template-columns: 1fr 1fr 1fr 1.5fr 1fr !important;
+  }
+
+  .print-section-iv > div:nth-of-type(5) {
+    grid-template-columns: 2fr 1fr !important;
+  }
+
+  .print-section-i h2,
+  .print-section-ii h2,
+  .print-section-iii h2,
+  .print-section-iv > div:first-child {
+    padding-top: 0.8mm !important;
+    padding-bottom: 0.8mm !important;
+  }
+
+  .print-section-i label,
+  .print-section-i fieldset,
+  .print-section-ii label,
+  .print-section-ii fieldset,
+  .print-section-iii label,
+  .print-section-iii fieldset,
+  .print-section-iv label,
+  .print-section-iv fieldset {
+    padding-top: 1.2mm !important;
+    padding-bottom: 1.2mm !important;
+  }
+
+  .print-section-i input:not(.check-symbol),
+  .print-section-i select,
+  .print-section-ii input:not(.check-symbol),
+  .print-section-ii select,
+  .print-section-iii input:not(.check-symbol),
+  .print-section-iii select,
+  .print-section-iv input:not(.check-symbol),
+  .print-section-iv select {
+    height: 7mm !important;
+  }
+
+  .print-form .check-symbol {
+    width: 13px !important;
+    height: 13px !important;
+    min-width: 13px;
+    min-height: 13px;
+    border-width: 1.2px !important;
+    border-radius: 2px;
+    margin-right: 0.5mm;
+    vertical-align: middle;
+    flex: 0 0 auto;
+  }
+
+  .print-form .check-symbol::before {
+    font-size: 11px !important;
+    font-weight: 700;
+  }
+
+  .print-form label.inline-flex {
     align-items: center;
   }
 

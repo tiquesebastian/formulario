@@ -21,7 +21,7 @@ export function IdentificacionSection({
   checklistInputClassName,
 }: IdentificacionSectionProps) {
   return (
-    <section className="overflow-hidden rounded-md border border-sky-300">
+    <section className="print-section-ii overflow-hidden rounded-md border border-sky-300">
       <h2 className="border-b border-sky-300 bg-sky-600 px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">
         II. Datos básicos de identificación
         <span className="ml-1 text-[10px] font-medium normal-case">
