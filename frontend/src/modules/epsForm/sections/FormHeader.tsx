@@ -31,12 +31,12 @@ export function FormHeader({ register, today }: FormHeaderProps) {
           Registro de Novedades al SGSSS
         </h1>
 
-        <div className="rounded-md border border-sky-300 bg-sky-50 p-2">
+        <div className="rounded-md border border-sky-300 bg-sky-50 p-2.5">
           <p className="text-center text-[11px] font-semibold text-sky-700">Fecha de Radicado</p>
-          <div className="mt-1 flex items-center justify-center gap-1">
+          <div className="mt-1.5 flex items-center justify-center gap-1.5">
             <select
               defaultValue={today.day}
-              className="h-7 w-10 rounded border border-sky-300 bg-white px-1 text-center text-xs text-sky-900"
+              className="h-8 w-12 rounded border border-sky-300 bg-white px-1 text-center text-xs text-sky-900"
               {...register('radicadoDia')}
             >
               {dateCatalog.days.map((day) => (
@@ -47,7 +47,7 @@ export function FormHeader({ register, today }: FormHeaderProps) {
             </select>
             <select
               defaultValue={today.month}
-              className="h-7 w-10 rounded border border-sky-300 bg-white px-1 text-center text-xs text-sky-900"
+              className="h-8 w-12 rounded border border-sky-300 bg-white px-1 text-center text-xs text-sky-900"
               {...register('radicadoMes')}
             >
               {dateCatalog.months.map((month) => (
@@ -58,7 +58,7 @@ export function FormHeader({ register, today }: FormHeaderProps) {
             </select>
             <select
               defaultValue={today.year}
-              className="h-7 w-14 rounded border border-sky-300 bg-white px-1 text-center text-xs text-sky-900"
+              className="h-8 w-20 rounded border border-sky-300 bg-white px-1 text-center text-xs text-sky-900"
               {...register('radicadoAnio')}
             >
               {dateCatalog.years.map((year) => (
