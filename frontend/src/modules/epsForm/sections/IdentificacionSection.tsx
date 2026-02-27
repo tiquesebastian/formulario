@@ -1,11 +1,7 @@
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 import { FieldError } from '../components/FieldError'
 import type { AffiliationFormData } from '../schema/affiliationSchema'
-import {
-  dateCatalog,
-  departmentCatalog,
-  documentTypeCatalog,
-} from '../config/catalogs'
+import { dateCatalog, documentTypeCatalog } from '../config/catalogs'
 
 // Sección II: datos básicos de identificación del afiliado principal.
 
@@ -13,14 +9,34 @@ interface IdentificacionSectionProps {
   register: UseFormRegister<AffiliationFormData>
   errors: FieldErrors<AffiliationFormData>
   checklistInputClassName: string
+  departments: Array<{ id: number; code: string; name: string }>
+  municipalities: Array<{ id: number; code: string; name: string }>
+  isCatalogLoading: boolean
+  isMunicipalitiesLoading: boolean
+}
+
+function formatCatalogLabel(value: string): string {
+  const titleCase = value
+    .toLocaleLowerCase('es-CO')
+    .split(' ')
+    .filter((chunk) => chunk.length > 0)
+    .map((chunk) => chunk.charAt(0).toLocaleUpperCase('es-CO') + chunk.slice(1))
+    .join(' ')
+
+  return titleCase.replace(/D\.c\./g, 'D.C.')
 }
 
 export function IdentificacionSection({
   register,
   errors,
   checklistInputClassName,
+  departments,
+  municipalities,
+  isCatalogLoading,
+  isMunicipalitiesLoading,
 }: IdentificacionSectionProps) {
   return (
+    // print-section-ii agrupa overrides de impresión para preservar la estructura oficial.
     <section className="print-section-ii overflow-hidden rounded-md border border-sky-300">
       <h2 className="border-b border-sky-300 bg-sky-600 px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">
         II. Datos básicos de identificación
@@ -29,6 +45,7 @@ export function IdentificacionSection({
         </span>
       </h2>
 
+      {/* Bloque 8: nombres y apellidos en cuatro columnas consecutivas. */}
       <div className="grid border-b border-sky-300 md:grid-cols-4">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900 md:last:border-r-0">
           <span className="block font-semibold">8. Apellidos y nombres *</span>
@@ -71,6 +88,7 @@ export function IdentificacionSection({
         </label>
       </div>
 
+      {/* Bloques 9-13: documento, sexo biológico/identificación y nacionalidad. */}
       <div className="grid border-b border-sky-300 md:grid-cols-[1.2fr_1.5fr_1fr_2fr_1fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">9. Tipo de documento de identidad *</span>
@@ -153,6 +171,7 @@ export function IdentificacionSection({
         </label>
       </div>
 
+      {/* Bloques 14-15: lugar y fecha de nacimiento con selects para formato consistente. */}
       <div className="grid border-b border-sky-300 md:grid-cols-[1fr_1fr_1fr_1fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">14. Lugar de nacimiento - País *</span>
@@ -167,12 +186,13 @@ export function IdentificacionSection({
           <span className="block font-semibold">Departamento *</span>
           <select
             className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
+            disabled={isCatalogLoading}
             {...register('nacimientoDepartamento')}
           >
-            <option value="">Seleccione</option>
-            {departmentCatalog.map((department) => (
-              <option key={department.value} value={department.value}>
-                {department.label}
+            <option value="">{isCatalogLoading ? 'Cargando...' : 'Seleccione'}</option>
+            {departments.map((department) => (
+              <option key={department.id} value={String(department.id)}>
+                {formatCatalogLabel(department.name)}
               </option>
             ))}
           </select>
@@ -181,10 +201,24 @@ export function IdentificacionSection({
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">Municipio *</span>
-          <input
-            className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
+          <select
+            className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
+            disabled={isMunicipalitiesLoading || municipalities.length === 0}
             {...register('nacimientoMunicipio')}
-          />
+          >
+            <option value="">
+              {isMunicipalitiesLoading
+                ? 'Cargando...'
+                : municipalities.length > 0
+                  ? 'Seleccione'
+                  : 'Seleccione departamento'}
+            </option>
+            {municipalities.map((municipality) => (
+              <option key={municipality.id} value={String(municipality.id)}>
+                {formatCatalogLabel(municipality.name)}
+              </option>
+            ))}
+          </select>
           <FieldError message={errors.nacimientoMunicipio?.message} />
         </label>
 

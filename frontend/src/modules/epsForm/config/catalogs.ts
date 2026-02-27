@@ -108,6 +108,7 @@ export const sisbenClassCatalog = {
 }
 
 export const dateCatalog = {
+  // Años dinámicos hacia atrás para mantener vigencia sin editar manualmente cada año.
   days: Array.from({ length: 31 }, (_, index) => String(index + 1).padStart(2, '0')),
   months: Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, '0')),
   years: Array.from({ length: 90 }, (_, index) => String(new Date().getFullYear() - index)),

@@ -1,0 +1,85 @@
+Fase 1: Alcance cerrado (1 día)
+
+Definir “listo” del MVP: llenar, validar obligatorios, descargar PDF en 2 hojas, guardar registro básico.
+Congelar reglas de impresión actuales (no tocar estilos que ya funcionan en 2 páginas).
+Definir campos exactos para persistencia mínima: pdfId, documentNumber, departmentId, municipalityId, createdAt, pdfUrl?.
+Entregable: documento corto de alcance + criterios de aceptación.
+
+Fase 2: Modelo de datos mínimo (1 día)
+
+Crear tablas: departments, municipalities, pdf_records.
+Agregar llaves foráneas (municipalities.department_id, pdf_records.department_id, pdf_records.municipality_id).
+Índices mínimos: pdf_records.pdf_id único, municipalities.department_id, pdf_records.created_at.
+Cargar semilla de departamentos/municipios.
+Entregable: script SQL versionado + script de seed.
+
+Fase 3: Backend mínimo funcional (2 días)
+
+Implementar endpoints:
+GET /departments
+GET /municipalities?departmentId=...
+POST /pdf-records
+Validaciones backend (obligatorios, IDs válidos, documentNumber no vacío).
+Respuestas estándar de error (400, 404, 500) y logs básicos.
+Mantener arquitectura simple: controlador → servicio → repositorio.
+Entregable: API estable y documentada (contratos request/response).
+
+Fase 4: Frontend necesario (2 días)
+
+Integrar carga inicial de departamentos.
+Implementar combo dependiente de municipios por departamento.
+Mantener formulario actual y botón de PDF con validación previa.
+En evento de descarga/confirmación, invocar POST /pdf-records.
+Manejo de estados UX: cargando, error de red, éxito de registro.
+Entregable: flujo completo de usuario sin pasos manuales.
+
+Fase 5: Pruebas pequeñas pero necesarias (1–1.5 días)
+
+Backend (imprescindible):
+GET /departments devuelve lista.
+GET /municipalities filtra por departmentId.
+POST /pdf-records crea registro válido.
+Casos negativos: departmentId inválido, municipio no corresponde al departamento, documentNumber vacío.
+Frontend (imprescindible):
+Cambio de departamento refresca municipios.
+Bloqueo de descarga si faltan obligatorios.
+Registro exitoso al guardar trazabilidad.
+Prueba manual final (smoke):
+Llenar formulario completo → descargar PDF → verificar 2 hojas → confirmar registro en BD.
+Entregable: set pequeño de tests automatizados + checklist manual.
+
+Fase 6: Documentación y comentarios (1 día)
+
+README técnico: arquitectura, variables de entorno, cómo correr local.
+Guía operativa: flujo de usuario y troubleshooting.
+Comentarios en puntos clave: validación, generación PDF, guardado de registro y catálogos.
+Colección de pruebas API (Postman/Bruno) para soporte rápido.
+Entregable: documentación clara para dev y soporte.
+
+Fase 7: Preparación de despliegue (1–2 días)
+
+Variables por ambiente (dev/qa/prod) y manejo de secretos.
+Pipeline CI/CD (build + test + deploy) para frontend y backend.
+Migraciones SQL automatizadas en release.
+Healthcheck y logging en producción.
+Entregable: despliegue repetible con rollback básico.
+
+Fase 8: Salida a producción controlada (0.5 día)
+
+Prueba E2E en ambiente productivo.
+Validación de PDF real (2 páginas) en navegadores objetivo.
+Monitoreo 48h inicial y correcciones menores.
+Entregable: MVP productivo y estable.
+Orden exacto de ejecución recomendado
+
+Alcance + criterios
+SQL + seed
+Endpoints backend
+Integración frontend
+Pruebas mínimas
+Documentación/comentarios
+CI/CD + deploy
+Go-live controlado
+Tiempo total estimado
+
+8 a 10 días hábiles (equipo pequeño, alcance MVP cerrado).

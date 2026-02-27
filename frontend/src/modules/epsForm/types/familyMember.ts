@@ -1,5 +1,6 @@
 // Modelo simplificado de una fila del bloque de miembros del núcleo familiar.
 export interface FamilyMember {
+  // ID local de fila (B1..B5) para mapear edición en la tabla.
   id: string
   apellido1: string
   apellido2: string

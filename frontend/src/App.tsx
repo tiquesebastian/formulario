@@ -3,8 +3,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { defaultValues, type AffiliationFormData, affiliationSchema } from './modules/epsForm/schema/affiliationSchema'
 import {
+  formatCurrencyWithPeso,
+  formatThousandsWithDots,
   sanitizeLetters,
   sanitizeNumbers,
+  shouldFormatAsCurrencyLike,
+  shouldFormatAsIdentificationNumber,
   shouldSanitizeAsLetters,
   shouldSanitizeAsNumbers,
 } from './modules/epsForm/utils/inputSanitizers'
@@ -20,6 +24,24 @@ const checklistInputClassName = 'check-symbol focus:outline-none focus:ring-2 fo
 // URL base de backend configurable por entorno.
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
+interface CatalogDepartment {
+  id: number
+  code: string
+  name: string
+}
+
+interface CatalogMunicipality {
+  id: number
+  departmentId: number
+  code: string
+  name: string
+}
+
+interface PdfRecordResponse {
+  id: number
+  pdfId: string
+}
+
 function App() {
   // Referencia para permitir deselección al hacer clic sobre el radio ya activo.
   const radioDeselectRef = useRef<{ name: string; value: string } | null>(null)
@@ -29,6 +51,14 @@ function App() {
   const [lookupFormId, setLookupFormId] = useState<string>('')
   // Indicador de carga durante la consulta de un formulario por ID.
   const [isLoadingForm, setIsLoadingForm] = useState(false)
+  // Catálogos dinámicos para selects dependientes de departamento y municipio.
+  const [departments, setDepartments] = useState<CatalogDepartment[]>([])
+  const [municipalities, setMunicipalities] = useState<CatalogMunicipality[]>([])
+  const [isCatalogLoading, setIsCatalogLoading] = useState(false)
+  const [isMunicipalitiesLoading, setIsMunicipalitiesLoading] = useState(false)
+  const [catalogErrorMessage, setCatalogErrorMessage] = useState<string>('')
+  const [pdfRecordState, setPdfRecordState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [pdfRecordMessage, setPdfRecordMessage] = useState<string>('')
 
   // Formulario principal: integra validación Zod + estado RHF para todas las secciones.
   const {
@@ -38,6 +68,7 @@ function App() {
     watch,
     trigger,
     reset,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<AffiliationFormData>({
     resolver: zodResolver(affiliationSchema),
@@ -75,6 +106,99 @@ function App() {
   const anexo90 = watch('anexo90')
   const anexo91 = watch('anexo91')
   const anexosTotal = watch('anexosTotal')
+  const selectedBirthDepartmentId = watch('nacimientoDepartamento')
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadDepartments = async () => {
+      try {
+        setCatalogErrorMessage('')
+        setIsCatalogLoading(true)
+        const response = await fetch(`${apiBaseUrl}/api/departments`)
+        if (!response.ok) {
+          throw new Error('No fue posible cargar departamentos.')
+        }
+
+        const payload = (await response.json()) as CatalogDepartment[]
+        if (!isMounted) return
+        setDepartments(payload)
+      } catch (error) {
+        if (!isMounted) return
+        setDepartments([])
+        setMunicipalities([])
+        const message =
+          error instanceof Error ? error.message : 'Error inesperado al cargar departamentos.'
+        setCatalogErrorMessage(message)
+      } finally {
+        if (isMounted) {
+          setIsCatalogLoading(false)
+        }
+      }
+    }
+
+    loadDepartments()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadMunicipalities = async () => {
+      if (!selectedBirthDepartmentId) {
+        setMunicipalities([])
+        if (getValues('nacimientoMunicipio')) {
+          setValue('nacimientoMunicipio', '')
+        }
+        return
+      }
+
+      try {
+        setCatalogErrorMessage('')
+        setIsMunicipalitiesLoading(true)
+        const response = await fetch(
+          `${apiBaseUrl}/api/municipalities?departmentId=${encodeURIComponent(selectedBirthDepartmentId)}`,
+        )
+
+        if (!response.ok) {
+          throw new Error('No fue posible cargar municipios.')
+        }
+
+        const payload = (await response.json()) as CatalogMunicipality[]
+        if (!isMounted) return
+
+        setMunicipalities(payload)
+
+        const currentMunicipality = getValues('nacimientoMunicipio')
+        const hasCurrentMunicipality = payload.some(
+          (municipality) => String(municipality.id) === currentMunicipality,
+        )
+
+        if (currentMunicipality && !hasCurrentMunicipality) {
+          setValue('nacimientoMunicipio', '')
+        }
+      } catch (error) {
+        if (!isMounted) return
+        setMunicipalities([])
+        setValue('nacimientoMunicipio', '')
+        const message = error instanceof Error ? error.message : 'Error inesperado al cargar municipios.'
+        setCatalogErrorMessage(message)
+      } finally {
+        if (isMounted) {
+          setIsMunicipalitiesLoading(false)
+        }
+      }
+    }
+
+    loadMunicipalities()
+
+    return () => {
+      isMounted = false
+    }
+  }, [selectedBirthDepartmentId, getValues, setValue])
 
   useEffect(() => {
     // Total de anexos = suma de cantidades numéricas + cantidad de casillas marcadas (83-91).
@@ -238,13 +362,65 @@ function App() {
 
   const onDownloadPdf = async () => {
     // Exportación PDF condicionada a validación para destacar obligatorios faltantes.
+    setPdfRecordState('idle')
+    setPdfRecordMessage('')
+
     const isValid = await trigger()
     if (!isValid) {
       window.alert('Completa los campos obligatorios marcados con * antes de descargar.')
       return
     }
 
-    window.print()
+    const payload = getValues()
+    const departmentId = Number(payload.nacimientoDepartamento)
+    const municipalityId = Number(payload.nacimientoMunicipio)
+
+    if (!departmentId || !municipalityId) {
+      setPdfRecordState('error')
+      setPdfRecordMessage('Selecciona departamento y municipio válidos antes de descargar.')
+      return
+    }
+
+    try {
+      setPdfRecordState('loading')
+      setPdfRecordMessage('Registrando trazabilidad del PDF...')
+
+      const response = await fetch(`${apiBaseUrl}/api/pdf-records`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pdfId: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
+          documentNumber: payload.numeroDocumento.replace(/\D+/g, ''),
+          departmentId,
+          municipalityId,
+          createdAt: new Date().toISOString(),
+        }),
+      })
+
+      const result = (await response.json()) as
+        | PdfRecordResponse
+        | { message?: string; code?: string }
+
+      if (!response.ok) {
+        const message =
+          'message' in result && result.message
+            ? result.message
+            : 'No fue posible registrar el PDF en backend.'
+        throw new Error(message)
+      }
+
+      const registered = result as PdfRecordResponse
+      setPdfRecordState('success')
+      setPdfRecordMessage(`Registro PDF exitoso (${registered.pdfId}).`)
+
+      window.print()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error de red al registrar PDF.'
+      setPdfRecordState('error')
+      setPdfRecordMessage(message)
+    }
   }
 
   const handleSanitizeOnChangeCapture = (event: React.ChangeEvent<HTMLFormElement>) => {
@@ -258,7 +434,13 @@ function App() {
     if (!fieldName) return
 
     if (shouldSanitizeAsNumbers(fieldName)) {
-      const nextValue = sanitizeNumbers(target.value)
+      const sanitizedNumeric = sanitizeNumbers(target.value)
+      const nextValue = shouldFormatAsCurrencyLike(fieldName)
+        ? formatCurrencyWithPeso(sanitizedNumeric)
+        : shouldFormatAsIdentificationNumber(fieldName)
+          ? formatThousandsWithDots(sanitizedNumeric)
+        : sanitizedNumeric
+
       if (nextValue !== target.value) {
         target.value = nextValue
       }
@@ -305,6 +487,7 @@ function App() {
   }
 
   return (
+    // Contenedor principal: mantiene layout responsivo en pantalla y limpio en impresión.
     <main className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 lg:py-8">
       <section className="print-shell overflow-hidden rounded-lg border border-sky-300 bg-white shadow-sm">
         <form
@@ -325,15 +508,34 @@ function App() {
             register={register}
             errors={errors}
             checklistInputClassName={checklistInputClassName}
+            departments={departments}
+            municipalities={municipalities}
+            isCatalogLoading={isCatalogLoading}
+            isMunicipalitiesLoading={isMunicipalitiesLoading}
           />
           <ComplementariosSection
             register={register}
+            setValue={setValue}
+            watch={watch}
             errors={errors}
             checklistInputClassName={checklistInputClassName}
+            departments={departments}
           />
           <div className="space-y-0">
-            <ConyugeSection register={register} checklistInputClassName={checklistInputClassName} />
-            <BeneficiariesSection register={register} setValue={setValue} watch={watch} errors={errors} />
+            <ConyugeSection
+              register={register}
+              setValue={setValue}
+              watch={watch}
+              checklistInputClassName={checklistInputClassName}
+              departments={departments}
+            />
+            <BeneficiariesSection
+              register={register}
+              setValue={setValue}
+              watch={watch}
+              errors={errors}
+              departments={departments}
+            />
           </div>
 
           <div className="no-print rounded-md border border-sky-200 bg-sky-50 p-3 text-xs text-sky-900">
@@ -370,12 +572,22 @@ function App() {
             <p className="sm:mr-auto sm:self-center text-[11px] text-sky-700">
               * Campos obligatorios para descargar.
             </p>
+            <div className="sm:mr-auto sm:self-center text-[11px] text-sky-700">
+              {isCatalogLoading || isMunicipalitiesLoading ? (
+                <p>Cargando catálogos...</p>
+              ) : null}
+              {catalogErrorMessage ? <p>Error de red: {catalogErrorMessage}</p> : null}
+              {pdfRecordState === 'loading' ? <p>{pdfRecordMessage}</p> : null}
+              {pdfRecordState === 'success' ? <p>{pdfRecordMessage}</p> : null}
+              {pdfRecordState === 'error' ? <p>Error: {pdfRecordMessage}</p> : null}
+            </div>
             <button
               type="button"
               onClick={onDownloadPdf}
+              disabled={pdfRecordState === 'loading'}
               className="rounded-md border border-sky-300 px-4 py-2 text-sm font-medium text-sky-700 hover:bg-sky-50"
             >
-              Descargar PDF
+              {pdfRecordState === 'loading' ? 'Registrando...' : 'Descargar PDF'}
             </button>
             <button
               type="button"

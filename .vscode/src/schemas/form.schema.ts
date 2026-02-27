@@ -6,9 +6,11 @@ import { z } from 'zod'
 export const formStatusSchema = z.enum(['draft', 'submitted'])
 
 const onlyNumbersPattern = /^\d+$/
+const onlyNumbersWithDotsPattern = /^[\d.]+$/
 const namePattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/
 const emptyStringToUndefined = (value: unknown) =>
   typeof value === 'string' && value.trim() === '' ? undefined : value
+const digitsOnly = (value: string) => value.replace(/\D+/g, '')
 
 function isValidDayMonthYear(day?: string, month?: string, year?: string): boolean {
   if (!day || !month || !year) return true
@@ -40,28 +42,28 @@ const formDataSchema = z
     ),
     primerApellido: z.preprocess(
       emptyStringToUndefined,
-      z.string().min(2, 'primerApellido inválido').regex(namePattern, 'primerApellido solo permite letras').optional(),
+      z.string().min(3, 'primerApellido inválido').regex(namePattern, 'primerApellido solo permite letras').optional(),
     ),
     segundoApellido: z.preprocess(
       emptyStringToUndefined,
-      z.string().min(2, 'segundoApellido inválido').regex(namePattern, 'segundoApellido solo permite letras').optional(),
+      z.string().min(3, 'segundoApellido inválido').regex(namePattern, 'segundoApellido solo permite letras').optional(),
     ),
     primerNombre: z.preprocess(
       emptyStringToUndefined,
-      z.string().min(2, 'primerNombre inválido').regex(namePattern, 'primerNombre solo permite letras').optional(),
+      z.string().min(3, 'primerNombre inválido').regex(namePattern, 'primerNombre solo permite letras').optional(),
     ),
     segundoNombre: z.preprocess(
       emptyStringToUndefined,
-      z.string().min(2, 'segundoNombre inválido').regex(namePattern, 'segundoNombre solo permite letras').optional(),
+      z.string().min(3, 'segundoNombre inválido').regex(namePattern, 'segundoNombre solo permite letras').optional(),
     ),
     numeroDocumento: z.preprocess(
       emptyStringToUndefined,
-      z.string().min(6, 'numeroDocumento debe tener mínimo 6 dígitos').max(20, 'numeroDocumento demasiado largo').regex(onlyNumbersPattern, 'numeroDocumento solo acepta números').optional(),
+      z.string().refine((value) => digitsOnly(value).length >= 6, 'numeroDocumento debe tener mínimo 6 dígitos').refine((value) => digitsOnly(value).length <= 20, 'numeroDocumento demasiado largo').regex(onlyNumbersWithDotsPattern, 'numeroDocumento solo acepta números').optional(),
     ),
     correo: z.preprocess(emptyStringToUndefined, z.string().email('correo inválido').optional()),
     telefono: z.preprocess(
       emptyStringToUndefined,
-      z.string().min(7, 'telefono debe tener mínimo 7 dígitos').max(15, 'telefono demasiado largo').regex(onlyNumbersPattern, 'telefono solo acepta números').optional(),
+      z.string().min(10, 'telefono debe tener mínimo 10 dígitos').max(15, 'telefono demasiado largo').regex(onlyNumbersPattern, 'telefono solo acepta números').optional(),
     ),
     telefonoFijo: z.preprocess(
       emptyStringToUndefined,

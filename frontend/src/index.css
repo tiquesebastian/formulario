@@ -108,8 +108,8 @@
   }
 
   .print-page-break {
-    break-before: auto;
-    page-break-before: auto;
+    break-before: page;
+    page-break-before: always;
     margin-top: 0 !important;
   }
 
@@ -224,6 +224,64 @@
 
   .print-form label.inline-flex {
     align-items: center;
+  }
+
+  /* Fechas puntuales solicitadas: Radicado, 64 y 66 */
+  .print-form select[name='radicadoDia'],
+  .print-form select[name='radicadoMes'] {
+    width: 14mm !important;
+    min-width: 14mm !important;
+    height: 8mm !important;
+    font-size: 9px !important;
+    line-height: normal !important;
+    padding-left: 0.4mm !important;
+    padding-right: 0.4mm !important;
+    text-align-last: center;
+  }
+
+  .print-form select[name='radicadoAnio'] {
+    width: 20mm !important;
+    min-width: 20mm !important;
+    height: 8mm !important;
+    font-size: 9px !important;
+    line-height: normal !important;
+    padding-left: 0.4mm !important;
+    padding-right: 0.4mm !important;
+    text-align-last: center;
+  }
+
+  .print-form select[name='novedadFechaNacimientoDia'],
+  .print-form select[name='novedadFechaNacimientoMes'],
+  .print-form select[name='novedadFechaDia'],
+  .print-form select[name='novedadFechaMes'] {
+    width: 11mm !important;
+    min-width: 11mm !important;
+    height: 6.2mm !important;
+    font-size: 7.5px !important;
+    line-height: normal !important;
+    padding-left: 0.3mm !important;
+    padding-right: 0.3mm !important;
+    text-align: center !important;
+    text-align-last: auto !important;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: none !important;
+  }
+
+  .print-form select[name='novedadFechaNacimientoAnio'],
+  .print-form select[name='novedadFechaAnio'] {
+    width: 18mm !important;
+    min-width: 18mm !important;
+    height: 6.2mm !important;
+    font-size: 7.5px !important;
+    line-height: normal !important;
+    padding-left: 0.3mm !important;
+    padding-right: 0.3mm !important;
+    text-align: center !important;
+    text-align-last: auto !important;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: none !important;
   }
 
   .no-print {

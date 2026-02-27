@@ -1,11 +1,10 @@
-import type { ChangeEvent } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import type { UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { FieldError } from '../components/FieldError';
 import type { AffiliationFormData } from '../schema/affiliationSchema';
 import {
   complementaryCatalog,
   dateCatalog,
-  departmentCatalog,
   documentTypeCatalog,
   sisbenClassCatalog,
 } from '../config/catalogs';
@@ -18,6 +17,31 @@ interface BeneficiariesSectionProps {
   setValue: UseFormSetValue<AffiliationFormData>;
   watch: UseFormWatch<AffiliationFormData>;
   errors: Record<string, any>;
+  departments: Array<{ id: number; code: string; name: string }>;
+}
+
+interface CatalogMunicipality {
+  id: number
+  departmentId: number
+  code: string
+  name: string
+}
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
+
+function formatCatalogLabel(value: string): string {
+  const titleCase = value
+    .toLocaleLowerCase('es-CO')
+    .split(' ')
+    .filter((chunk) => chunk.length > 0)
+    .map((chunk) => chunk.charAt(0).toLocaleUpperCase('es-CO') + chunk.slice(1))
+    .join(' ')
+
+  return titleCase.replace(/D\.c\./g, 'D.C.')
+}
+
+function isSameValue(value: string, id: number): boolean {
+  return value === String(id)
 }
 
 // Catálogos base usados para pintar filas repetitivas con la misma estructura del formulario físico.
@@ -102,13 +126,163 @@ const anexosDetalle = [
 const checklistInputClassName = 'check-symbol focus:outline-none focus:ring-2 focus:ring-sky-300';
 const checkCellLabelClassName = 'inline-flex select-none items-center gap-1 cursor-pointer';
 
-export default function BeneficiariesSection({ register, setValue, watch, errors }: BeneficiariesSectionProps) {
+export default function BeneficiariesSection({ register, setValue, watch, errors, departments }: BeneficiariesSectionProps) {
+  // Esta sección concentra la mayor densidad de campos; por eso usa tablas y catálogos reutilizables.
   // Estado reactivo de imágenes para mostrar preview en firma/sello/sticker.
   const firmaCotizanteImagen = watch('firmaCotizanteImagen')
   const firmaAportanteImagen = watch('firmaAportanteImagen')
   const selloRadicacionImagen = watch('selloRadicacionImagen')
   const stickerProcesamientoImagen = watch('stickerProcesamientoImagen')
   const funcionarioFirmaImagen = watch('funcionarioFirmaImagen')
+
+  const beneficiarioBirthDepartments = beneficiaryLabels.map(({ b }) =>
+    watch(`beneficiario${b}DepartamentoBirth` as keyof AffiliationFormData) as string,
+  )
+  const beneficiarioResidenceDepartments = beneficiaryLabels.map(({ b }) =>
+    watch(`beneficiario${b}Departamento` as keyof AffiliationFormData) as string,
+  )
+  const aportanteDepartment = watch('aportanteDepartamento')
+
+  const [beneficiarioBirthMunicipalities, setBeneficiarioBirthMunicipalities] =
+    useState<Record<string, CatalogMunicipality[]>>({})
+  const [beneficiarioResidenceMunicipalities, setBeneficiarioResidenceMunicipalities] =
+    useState<Record<string, CatalogMunicipality[]>>({})
+  const [aportanteMunicipalities, setAportanteMunicipalities] = useState<CatalogMunicipality[]>([])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadBirthMunicipalities = async () => {
+      const updates: Record<string, CatalogMunicipality[]> = {}
+
+      for (const { b } of beneficiaryLabels) {
+        const departmentId = watch(`beneficiario${b}DepartamentoBirth` as keyof AffiliationFormData) as string
+        const municipalityField = `beneficiario${b}MunicipioBirth` as keyof AffiliationFormData
+
+        if (!departmentId) {
+          updates[b] = []
+          setValue(municipalityField, '' as never)
+          continue
+        }
+
+        try {
+          const response = await fetch(
+            `${apiBaseUrl}/api/municipalities?departmentId=${encodeURIComponent(departmentId)}`,
+          )
+          if (!response.ok) throw new Error()
+
+          const payload = (await response.json()) as CatalogMunicipality[]
+          updates[b] = payload
+
+          const current = watch(municipalityField) as string
+          const exists = payload.some((municipality) => isSameValue(current, municipality.id))
+          if (current && !exists) {
+            setValue(municipalityField, '' as never)
+          }
+        } catch {
+          updates[b] = []
+          setValue(municipalityField, '' as never)
+        }
+      }
+
+      if (isMounted) {
+        setBeneficiarioBirthMunicipalities(updates)
+      }
+    }
+
+    loadBirthMunicipalities()
+
+    return () => {
+      isMounted = false
+    }
+  }, [setValue, watch, ...beneficiarioBirthDepartments])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadResidenceMunicipalities = async () => {
+      const updates: Record<string, CatalogMunicipality[]> = {}
+
+      for (const { b } of beneficiaryLabels) {
+        const departmentId = watch(`beneficiario${b}Departamento` as keyof AffiliationFormData) as string
+        const municipalityField = `beneficiario${b}Municipio` as keyof AffiliationFormData
+
+        if (!departmentId) {
+          updates[b] = []
+          setValue(municipalityField, '' as never)
+          continue
+        }
+
+        try {
+          const response = await fetch(
+            `${apiBaseUrl}/api/municipalities?departmentId=${encodeURIComponent(departmentId)}`,
+          )
+          if (!response.ok) throw new Error()
+
+          const payload = (await response.json()) as CatalogMunicipality[]
+          updates[b] = payload
+
+          const current = watch(municipalityField) as string
+          const exists = payload.some((municipality) => isSameValue(current, municipality.id))
+          if (current && !exists) {
+            setValue(municipalityField, '' as never)
+          }
+        } catch {
+          updates[b] = []
+          setValue(municipalityField, '' as never)
+        }
+      }
+
+      if (isMounted) {
+        setBeneficiarioResidenceMunicipalities(updates)
+      }
+    }
+
+    loadResidenceMunicipalities()
+
+    return () => {
+      isMounted = false
+    }
+  }, [setValue, watch, ...beneficiarioResidenceDepartments])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadAportanteMunicipalities = async () => {
+      if (!aportanteDepartment) {
+        setAportanteMunicipalities([])
+        setValue('aportanteMunicipio', '')
+        return
+      }
+
+      try {
+        const response = await fetch(
+          `${apiBaseUrl}/api/municipalities?departmentId=${encodeURIComponent(aportanteDepartment)}`,
+        )
+        if (!response.ok) throw new Error()
+
+        const payload = (await response.json()) as CatalogMunicipality[]
+        if (!isMounted) return
+
+        setAportanteMunicipalities(payload)
+        const current = watch('aportanteMunicipio') ?? ''
+        const exists = payload.some((municipality) => isSameValue(current, municipality.id))
+        if (current && !exists) {
+          setValue('aportanteMunicipio', '')
+        }
+      } catch {
+        if (!isMounted) return
+        setAportanteMunicipalities([])
+        setValue('aportanteMunicipio', '')
+      }
+    }
+
+    loadAportanteMunicipalities()
+
+    return () => {
+      isMounted = false
+    }
+  }, [aportanteDepartment, setValue, watch])
 
   const handleFirmaUpload = (
     event: ChangeEvent<HTMLInputElement>,
@@ -119,6 +293,7 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
       | 'stickerProcesamientoImagen'
       | 'funcionarioFirmaImagen',
   ) => {
+    // Controla carga de activos gráficos para que luego puedan imprimirse/guardarse correctamente.
     // Convierte imagen a base64 para almacenarla en el estado del formulario y exportarla en impresión/PDF.
     // Esto evita depender de rutas temporales del navegador al momento de imprimir.
     const file = event.target.files?.[0]
@@ -154,11 +329,12 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
 
   return (
     <section className="-mt-px overflow-hidden border-x border-b border-sky-300">
+      {/* Introducción de la macro-sección IV-XII para beneficiarios y afiliados adicionales. */}
       <div className="border-b border-sky-300 bg-sky-50 px-3 py-1 text-[10px] font-semibold text-sky-900">
         Datos básicos de identificación de los beneficiarios y de los afiliados adicionales
       </div>
 
-      {/* Tabla de Nombres */}
+      {/* Tabla de Nombres: base nominal por filas B1..B5. */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-sky-300">
           <thead>
@@ -219,7 +395,7 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
         </table>
       </div>
 
-      {/* Tabla de Datos Adicionales */}
+      {/* Tabla de Datos Adicionales: documento, sexo, nacimiento y fecha por beneficiario. */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-sky-300">
           <thead>
@@ -231,8 +407,8 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
               <th className="min-w-[120px] border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">39. Sexo biológico</th>
               <th className="min-w-[140px] border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">40. Sexo de identificación</th>
               <th className="border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. País nacimiento</th>
-              <th className="min-w-[120px] border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Departamento (desplegable)</th>
-              <th className="border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Municipio</th>
+              <th className="w-[160px] border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Lugar de nacimiento - Departamento</th>
+              <th className="w-[160px] border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">41. Lugar de nacimiento - Municipio</th>
               <th className="min-w-[150px] border border-sky-300 bg-sky-100 px-1 py-0 text-[9px] font-bold text-sky-900">42. Fecha de nacimiento (desplegable)</th>
             </tr>
           </thead>
@@ -340,27 +516,33 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                 </td>
 
                 {/* Departamento Nacimiento */}
-                <td className="border border-sky-300 p-0">
+                <td className="w-[160px] border border-sky-300 p-0">
                   <select
                     {...register(`beneficiario${b}DepartamentoBirth` as keyof AffiliationFormData)}
                     className="w-full px-1 py-0.5 border-0 text-[9px]"
                   >
                     <option value="">-</option>
-                    {departmentCatalog.map((department) => (
-                      <option key={department.value} value={department.value}>
-                        {department.label}
+                    {departments.map((department) => (
+                      <option key={department.id} value={String(department.id)}>
+                        {formatCatalogLabel(department.name)}
                       </option>
                     ))}
                   </select>
                 </td>
 
                 {/* Municipio Nacimiento */}
-                <td className="border border-sky-300 p-0">
-                  <input
-                    type="text"
+                <td className="w-[160px] border border-sky-300 p-0">
+                  <select
                     {...register(`beneficiario${b}MunicipioBirth` as keyof AffiliationFormData)}
                     className="w-full px-1 py-0.5 border-0 text-[9px]"
-                  />
+                  >
+                    <option value="">-</option>
+                    {(beneficiarioBirthMunicipalities[b] ?? []).map((municipality) => (
+                      <option key={`birth-${b}-${municipality.id}`} value={String(municipality.id)}>
+                        {formatCatalogLabel(municipality.name)}
+                      </option>
+                    ))}
+                  </select>
                 </td>
 
                 {/* Fecha Nacimiento */}
@@ -620,20 +802,26 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                     className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900"
                   >
                     <option value="">-</option>
-                    {departmentCatalog.map((department) => (
-                      <option key={`res-${b}-${department.value}`} value={department.value}>
-                        {department.label}
+                    {departments.map((department) => (
+                      <option key={`res-${b}-${department.id}`} value={String(department.id)}>
+                        {formatCatalogLabel(department.name)}
                       </option>
                     ))}
                   </select>
                 </td>
 
                 <td className="border border-sky-300 bg-slate-100 p-0">
-                  <input
-                    type="text"
+                  <select
                     {...register(`beneficiario${b}Municipio` as keyof AffiliationFormData)}
                     className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900"
-                  />
+                  >
+                    <option value="">-</option>
+                    {(beneficiarioResidenceMunicipalities[b] ?? []).map((municipality) => (
+                      <option key={`resmun-${b}-${municipality.id}`} value={String(municipality.id)}>
+                        {formatCatalogLabel(municipality.name)}
+                      </option>
+                    ))}
+                  </select>
                 </td>
 
                 <td colSpan={2} className="border border-sky-300 bg-slate-100 px-1 py-0.5 text-[8px] text-sky-900">
@@ -750,6 +938,7 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
         </table>
       </div>
 
+      {/* El salto controla que el bloque IPS inicie en nueva hoja durante impresión. */}
       <div className="print-page-break mt-3 overflow-x-auto rounded-b-md border border-sky-300">
         <table className="w-full border-collapse border border-sky-300">
           <thead>
@@ -929,19 +1118,25 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                   className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900"
                 >
                   <option value="">-</option>
-                  {departmentCatalog.map((department) => (
-                    <option key={`aportante-dep-${department.value}`} value={department.value}>
-                      {department.label}
+                  {departments.map((department) => (
+                    <option key={`aportante-dep-${department.id}`} value={String(department.id)}>
+                      {formatCatalogLabel(department.name)}
                     </option>
                   ))}
                 </select>
               </td>
               <td colSpan={3} className="border border-sky-300 bg-slate-100 p-0">
-                <input
-                  type="text"
+                <select
                   {...register('aportanteMunicipio')}
                   className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900"
-                />
+                >
+                  <option value="">-</option>
+                  {aportanteMunicipalities.map((municipality) => (
+                    <option key={`aportante-mun-${municipality.id}`} value={String(municipality.id)}>
+                      {formatCatalogLabel(municipality.name)}
+                    </option>
+                  ))}
+                </select>
               </td>
             </tr>
 
@@ -1105,20 +1300,20 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                 </div>
               </td>
               <td colSpan={3} className="border border-sky-300 bg-slate-100 px-1 py-0.5">
-                <div className="flex items-center gap-1.5">
-                  <select {...register('novedadFechaNacimientoDia')} className="h-5 w-10 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                <div className="grid w-full grid-cols-[1fr_1fr_1.35fr] gap-2">
+                  <select {...register('novedadFechaNacimientoDia')} className="h-6 w-full border border-sky-300 bg-white px-1 text-center text-[9px] text-sky-900">
                     <option value="">DD</option>
                     {dateCatalog.days.map((day) => (
                       <option key={`nfd-${day}`} value={day}>{day}</option>
                     ))}
                   </select>
-                  <select {...register('novedadFechaNacimientoMes')} className="h-5 w-10 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                  <select {...register('novedadFechaNacimientoMes')} className="h-6 w-full border border-sky-300 bg-white px-1 text-center text-[9px] text-sky-900">
                     <option value="">MM</option>
                     {dateCatalog.months.map((month) => (
                       <option key={`nfm-${month}`} value={month}>{month}</option>
                     ))}
                   </select>
-                  <select {...register('novedadFechaNacimientoAnio')} className="h-5 w-14 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                  <select {...register('novedadFechaNacimientoAnio')} className="h-6 w-full border border-sky-300 bg-white px-1 text-center text-[9px] text-sky-900">
                     <option value="">AAAA</option>
                     {dateCatalog.years.map((year) => (
                       <option key={`nfy-${year}`} value={year}>{year}</option>
@@ -1140,20 +1335,20 @@ export default function BeneficiariesSection({ register, setValue, watch, errors
                 <input type="text" {...register('novedadEpsAnterior')} className="h-6 w-full border-0 bg-transparent px-1 py-0.5 text-[9px] text-sky-900" />
               </td>
               <td colSpan={2} className="border border-sky-300 bg-slate-100 px-1 py-0.5">
-                <div className="flex items-center gap-1">
-                  <select {...register('novedadFechaDia')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                <div className="grid w-full grid-cols-[1fr_1fr_1.35fr] gap-1.5">
+                  <select {...register('novedadFechaDia')} className="h-6 w-full border border-sky-300 bg-white px-1 text-center text-[9px] text-sky-900">
                     <option value="">DD</option>
                     {dateCatalog.days.map((day) => (
                       <option key={`nd-${day}`} value={day}>{day}</option>
                     ))}
                   </select>
-                  <select {...register('novedadFechaMes')} className="h-5 w-7 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                  <select {...register('novedadFechaMes')} className="h-6 w-full border border-sky-300 bg-white px-1 text-center text-[9px] text-sky-900">
                     <option value="">MM</option>
                     {dateCatalog.months.map((month) => (
                       <option key={`nm-${month}`} value={month}>{month}</option>
                     ))}
                   </select>
-                  <select {...register('novedadFechaAnio')} className="h-5 w-10 border border-sky-300 bg-white px-1 text-center text-[8px] text-sky-900">
+                  <select {...register('novedadFechaAnio')} className="h-6 w-full border border-sky-300 bg-white px-1 text-center text-[9px] text-sky-900">
                     <option value="">AAAA</option>
                     {dateCatalog.years.map((year) => (
                       <option key={`ny-${year}`} value={year}>{year}</option>

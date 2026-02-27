@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 // Patrón base para validar nombres y textos personales en español.
 const namePattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/
+const identificationWithDotsPattern = /^[\d.]+$/
+const onlyDigits = (value: string) => value.replace(/\D+/g, '')
 
 // Esquema fuente de verdad del formulario EPS: define tipos, validaciones y campos opcionales.
 export const affiliationSchema = z.object({
@@ -19,32 +21,32 @@ export const affiliationSchema = z.object({
     .regex(/^\d+$/, 'Solo se permiten números'),
   primerApellido: z
     .string()
-    .min(2, 'Ingrese al menos 2 caracteres')
+    .min(3, 'Ingrese al menos 3 caracteres')
     .regex(namePattern, 'Solo se permiten letras y espacios'),
   segundoApellido: z
     .string()
-    .min(2, 'Ingrese al menos 2 caracteres')
+    .min(3, 'Ingrese al menos 3 caracteres')
     .regex(namePattern, 'Solo se permiten letras y espacios'),
   primerNombre: z
     .string()
-    .min(2, 'Ingrese al menos 2 caracteres')
+    .min(3, 'Ingrese al menos 3 caracteres')
     .regex(namePattern, 'Solo se permiten letras y espacios'),
   segundoNombre: z
     .string()
-    .min(2, 'Ingrese al menos 2 caracteres')
+    .min(3, 'Ingrese al menos 3 caracteres')
     .regex(namePattern, 'Solo se permiten letras y espacios'),
   tipoDocumento: z.enum(['CN', 'MS', 'RC', 'TI', 'CC', 'CE', 'SC', 'PA', 'CD', 'PE', 'AS', 'PT']),
   numeroDocumento: z
     .string()
-    .min(6, 'Debe tener mínimo 6 dígitos')
-    .regex(/^\d+$/, 'Solo se permiten números'),
+    .refine((value) => onlyDigits(value).length >= 6, 'Debe tener mínimo 6 dígitos')
+    .regex(identificationWithDotsPattern, 'Solo se permiten números'),
   sexoBiologico: z.enum(['F', 'M']),
   sexoIdentificacion: z.enum(['F', 'M', 'T', 'NB', 'Otro']),
   sexoIdentificacionCual: z.string().optional(),
   nacionalidad: z.string().min(2, 'Ingrese nacionalidad'),
   nacimientoPais: z.string().min(2, 'Ingrese país'),
-  nacimientoDepartamento: z.string().min(2, 'Ingrese departamento'),
-  nacimientoMunicipio: z.string().min(2, 'Ingrese municipio'),
+  nacimientoDepartamento: z.string().min(1, 'Seleccione departamento'),
+  nacimientoMunicipio: z.string().min(1, 'Seleccione municipio'),
   fechaNacimientoDia: z.string().regex(/^\d{2}$/, 'Día inválido'),
   fechaNacimientoMes: z.string().regex(/^\d{2}$/, 'Mes inválido'),
   fechaNacimientoAnio: z.string().regex(/^\d{4}$/, 'Año inválido'),
@@ -69,7 +71,7 @@ export const affiliationSchema = z.object({
   correo: z.string().email('Correo electrónico inválido'),
   telefono: z
     .string()
-    .min(7, 'Debe tener mínimo 7 dígitos')
+    .min(10, 'Debe tener mínimo 10 dígitos')
     .regex(/^\d+$/, 'Solo se permiten números'),
   conyugePrimerApellido: z.string().optional(),
   conyugeSegundoApellido: z.string().optional(),
@@ -401,6 +403,7 @@ export const affiliationSchema = z.object({
 export type AffiliationFormData = z.infer<typeof affiliationSchema>
 
 // Valores iniciales sincronizados con el esquema para evitar estados indefinidos en la UI.
+// Este objeto también define valores por defecto de radios/selects al crear formulario nuevo.
 export const defaultValues: AffiliationFormData = {
   radicadoDia: '',
   radicadoMes: '',

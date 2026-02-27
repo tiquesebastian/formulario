@@ -12,11 +12,13 @@ interface TramiteSectionProps {
 
 export function TramiteSection({ register, errors, checklistInputClassName }: TramiteSectionProps) {
   return (
+    // print-section-i permite aplicar ajustes de impresión focalizados sin afectar otras secciones.
     <section className="print-section-i overflow-hidden rounded-md border border-sky-300">
       <h2 className="border-b border-sky-300 bg-sky-600 px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">
         I. Datos del Trámite
       </h2>
 
+      {/* Fila superior de la sección I: trámite, afiliación, régimen y contribución solidaria. */}
       <div className="grid gap-0 border-b border-sky-300 md:grid-cols-[1.2fr_2fr_1fr_1fr]">
         <fieldset className="space-y-1 border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <legend className="font-semibold">1. Tipo de Trámite *</legend>
@@ -113,6 +115,7 @@ export function TramiteSection({ register, errors, checklistInputClassName }: Tr
         </fieldset>
       </div>
 
+      {/* Fila inferior de la sección I: tipo de afiliado/cotizante y código interno EPS. */}
       <div className="grid gap-0 md:grid-cols-[2fr_2fr_1fr]">
         <fieldset className="space-y-1 border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <legend className="font-semibold">5. Tipo de Afiliado *</legend>
@@ -184,6 +187,7 @@ export function TramiteSection({ register, errors, checklistInputClassName }: Tr
 
         <label className="space-y-1 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">7. Código (a registrar por la EPS) *</span>
+          {/* Este campo se valida como numérico y se usa para trazabilidad administrativa. */}
           <input
             inputMode="numeric"
             className="h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"

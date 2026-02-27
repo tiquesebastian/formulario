@@ -14,6 +14,7 @@ export function FamilyMembersSection({
   updateFamilyMember,
 }: FamilyMembersSectionProps) {
   return (
+    // Componente de tabla compacta (legado) para edición rápida de miembros familiares.
     <section className="border border-sky-300">
       <div className="bg-blue-600 px-3 py-2 text-sm font-bold text-white">
         IV. DATOS DE IDENTIFICACIÓN DE LOS MIEMBROS DEL NÚCLEO FAMILIAR
@@ -54,6 +55,7 @@ export function FamilyMembersSection({
           </tr>
         </thead>
         <tbody>
+          {/* Render fijo de B1..B5 para conservar correspondencia visual con el formulario físico. */}
           {[...Array(5)].map((_, idx) => (
             <tr key={`B${idx + 1}`} className="hover:bg-gray-50">
               <td className="border border-sky-300 bg-blue-600 px-1 py-1 text-center text-white text-xs font-bold">

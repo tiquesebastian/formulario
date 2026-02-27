@@ -1,30 +1,114 @@
-import type { FieldErrors, UseFormRegister } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+import type {
+  FieldErrors,
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+} from 'react-hook-form'
 import { FieldError } from '../components/FieldError'
 import type { AffiliationFormData } from '../schema/affiliationSchema'
 import {
   complementaryCatalog,
-  departmentCatalog,
 } from '../config/catalogs'
 
 // Sección III: información complementaria social, geográfica y de aseguramiento.
 
 interface ComplementariosSectionProps {
   register: UseFormRegister<AffiliationFormData>
+  setValue: UseFormSetValue<AffiliationFormData>
+  watch: UseFormWatch<AffiliationFormData>
   errors: FieldErrors<AffiliationFormData>
   checklistInputClassName: string
+  departments: Array<{ id: number; code: string; name: string }>
+}
+
+interface CatalogMunicipality {
+  id: number
+  departmentId: number
+  code: string
+  name: string
+}
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
+
+function formatCatalogLabel(value: string): string {
+  const titleCase = value
+    .toLocaleLowerCase('es-CO')
+    .split(' ')
+    .filter((chunk) => chunk.length > 0)
+    .map((chunk) => chunk.charAt(0).toLocaleUpperCase('es-CO') + chunk.slice(1))
+    .join(' ')
+
+  return titleCase.replace(/D\.c\./g, 'D.C.')
 }
 
 export function ComplementariosSection({
   register,
+  setValue,
+  watch,
   errors,
   checklistInputClassName,
+  departments,
 }: ComplementariosSectionProps) {
+  const selectedResidenceDepartmentId = watch('departamentoResidencia')
+  const [residenceMunicipalities, setResidenceMunicipalities] = useState<CatalogMunicipality[]>([])
+  const [isResidenceMunicipalitiesLoading, setIsResidenceMunicipalitiesLoading] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadResidenceMunicipalities = async () => {
+      if (!selectedResidenceDepartmentId) {
+        setResidenceMunicipalities([])
+        setValue('municipioDistrito', '')
+        return
+      }
+
+      try {
+        setIsResidenceMunicipalitiesLoading(true)
+        const response = await fetch(
+          `${apiBaseUrl}/api/municipalities?departmentId=${encodeURIComponent(selectedResidenceDepartmentId)}`,
+        )
+
+        if (!response.ok) {
+          throw new Error('No fue posible cargar municipios de residencia.')
+        }
+
+        const payload = (await response.json()) as CatalogMunicipality[]
+        if (!isMounted) return
+
+        setResidenceMunicipalities(payload)
+        const currentMunicipality = watch('municipioDistrito')
+        const hasCurrent = payload.some((municipality) => String(municipality.id) === currentMunicipality)
+        if (currentMunicipality && !hasCurrent) {
+          setValue('municipioDistrito', '')
+        }
+      } catch {
+        if (!isMounted) return
+        setResidenceMunicipalities([])
+        setValue('municipioDistrito', '')
+      } finally {
+        if (isMounted) {
+          setIsResidenceMunicipalitiesLoading(false)
+        }
+      }
+    }
+
+    loadResidenceMunicipalities()
+
+    return () => {
+      isMounted = false
+    }
+  }, [selectedResidenceDepartmentId, setValue, watch])
+
   return (
+    // print-section-iii permite controlar densidad de campos en PDF sin cambiar el render web.
     <section className="print-section-iii overflow-hidden rounded-md border border-sky-300">
       <h2 className="border-b border-sky-300 bg-sky-600 px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">
         III. Datos complementarios
       </h2>
 
+      {/* Bloques 16-20: enfoque social (etnia, discapacidad y SISBÉN). */}
       <div className="grid border-b border-sky-300 md:grid-cols-[1fr_1fr_1fr_1fr_1.2fr_1.2fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">16. Etnia</span>
@@ -98,6 +182,7 @@ export function ComplementariosSection({
         </div>
       </div>
 
+      {/* Bloques 21-25: afiliación complementaria, ARL, pensión e indicadores económicos. */}
       <div className="grid border-b border-sky-300 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">21. Grupo de población especial</span>
@@ -162,6 +247,7 @@ export function ComplementariosSection({
         </label>
       </div>
 
+      {/* Bloque 26 y teléfono fijo: ubicación base de residencia del afiliado principal. */}
       <div className="grid border-b border-sky-300 md:grid-cols-[2fr_1fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">26. Residencia - Dirección</span>
@@ -181,6 +267,7 @@ export function ComplementariosSection({
         </label>
       </div>
 
+      {/* Contactabilidad prioritaria: celular y correo con validación obligatoria. */}
       <div className="grid border-b border-sky-300 md:grid-cols-[1fr_1fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">Teléfono celular *</span>
@@ -203,6 +290,7 @@ export function ComplementariosSection({
         </label>
       </div>
 
+      {/* Cierre de sección III: georreferencia y zona de residencia. */}
       <div className="grid md:grid-cols-[1fr_1fr_1fr_1.2fr]">
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">Departamento</span>
@@ -211,9 +299,9 @@ export function ComplementariosSection({
             {...register('departamentoResidencia')}
           >
             <option value="">Seleccione</option>
-            {departmentCatalog.map((department) => (
-              <option key={department.value} value={department.value}>
-                {department.label}
+            {departments.map((department) => (
+              <option key={department.id} value={String(department.id)}>
+                {formatCatalogLabel(department.name)}
               </option>
             ))}
           </select>
@@ -221,10 +309,24 @@ export function ComplementariosSection({
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">
           <span className="block font-semibold">Municipio / Distrito</span>
-          <input
-            className="mt-1 h-8 w-full rounded border border-sky-300 px-2 text-xs outline-none ring-sky-400 focus:ring"
+          <select
+            className="mt-1 h-8 w-full rounded border border-sky-300 bg-white px-2 text-xs outline-none ring-sky-400 focus:ring"
+            disabled={isResidenceMunicipalitiesLoading || residenceMunicipalities.length === 0}
             {...register('municipioDistrito')}
-          />
+          >
+            <option value="">
+              {isResidenceMunicipalitiesLoading
+                ? 'Cargando...'
+                : residenceMunicipalities.length > 0
+                  ? 'Seleccione'
+                  : 'Seleccione departamento'}
+            </option>
+            {residenceMunicipalities.map((municipality) => (
+              <option key={municipality.id} value={String(municipality.id)}>
+                {formatCatalogLabel(municipality.name)}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="border-r border-sky-300 p-2 text-[11px] text-sky-900">

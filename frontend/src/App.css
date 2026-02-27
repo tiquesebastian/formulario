@@ -1,4 +1,5 @@
 /* Estilos heredados de plantilla Vite; se mantienen para compatibilidad visual básica. */
+/* Nota: el formulario principal usa mayoritariamente Tailwind + index.css. */
 #root {
   max-width: 1280px;
   margin: 0 auto;
