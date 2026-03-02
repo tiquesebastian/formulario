@@ -78,3 +78,9 @@ Migraciones iniciales incluidas:
 - `GET /health` responde 200.
 - Frontend carga y consulta `GET /api/departments`.
 - Flujo principal completo: llenar formulario → descargar PDF → `POST /api/pdf-records` exitoso.
+
+## Recordatorio pendiente (Azure DevOps)
+
+- Mientras el runner no tenga acceso a la red interna de SQL Server, ejecutar releases con migraciones desactivadas.
+- Cuando se migre a Azure DevOps y exista conectividad segura a la BD corporativa, volver a activar migraciones automáticas en el release (`run_migrations=true` o stage equivalente de migraciones).
+- Validar en QA primero que el stage de migraciones quede en verde antes de habilitarlo en producción.

@@ -1,0 +1,233 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+parameters:
+  - name: targetEnvironment
+    displayName: Target environment
+    type: string
+    default: qa
+    values:
+      - qa
+      - prod
+  - name: runMigrations
+    displayName: Run SQL migrations
+    type: boolean
+    default: false
+  - name: runDeploy
+    displayName: Run deploy stages
+    type: boolean
+    default: false
+
+variables:
+  - name: NODE_VERSION
+    value: '20.x'
+  - name: BACKEND_WORKDIR
+    value: '.vscode'
+  - name: FRONTEND_WORKDIR
+    value: 'frontend'
+
+  # Variable groups por ambiente (crear ambos en Azure DevOps > Library)
+  - ${{ if eq(parameters.targetEnvironment, 'qa') }}:
+      - group: vg-formulario-qa
+  - ${{ if eq(parameters.targetEnvironment, 'prod') }}:
+      - group: vg-formulario-prod
+
+stages:
+  - stage: BuildAndTest
+    displayName: Build and test
+    jobs:
+      - job: Backend
+        displayName: Backend build/test
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+
+          - task: NodeTool@0
+            displayName: Use Node.js $(NODE_VERSION)
+            inputs:
+              versionSpec: '$(NODE_VERSION)'
+
+          - script: |
+              cd $(BACKEND_WORKDIR)
+              npm ci
+              npm run build
+              npm run test -- --passWithNoTests
+            displayName: Build and test backend
+
+          - task: CopyFiles@2
+            displayName: Collect backend artifact files
+            inputs:
+              SourceFolder: '$(Build.SourcesDirectory)/$(BACKEND_WORKDIR)'
+              Contents: |
+                dist/**
+                package.json
+                package-lock.json
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/backend'
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish backend artifact
+            inputs:
+              pathToPublish: '$(Build.ArtifactStagingDirectory)/backend'
+              artifactName: 'backend'
+
+      - job: Frontend
+        displayName: Frontend build/test
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+
+          - task: NodeTool@0
+            displayName: Use Node.js $(NODE_VERSION)
+            inputs:
+              versionSpec: '$(NODE_VERSION)'
+
+          - script: |
+              cd $(FRONTEND_WORKDIR)
+              npm ci
+              npm run build
+              npm run test -- --passWithNoTests
+            displayName: Build and test frontend
+
+          - task: CopyFiles@2
+            displayName: Collect frontend artifact files
+            inputs:
+              SourceFolder: '$(Build.SourcesDirectory)/$(FRONTEND_WORKDIR)/dist'
+              Contents: '**'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/frontend'
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish frontend artifact
+            inputs:
+              pathToPublish: '$(Build.ArtifactStagingDirectory)/frontend'
+              artifactName: 'frontend'
+
+  - stage: MigrateDb
+    displayName: Run SQL migrations
+    dependsOn: BuildAndTest
+    condition: and(succeeded(), ${{ parameters.runMigrations }})
+    jobs:
+      - job: RunMigrations
+        displayName: SQL migrations
+        # Recomendado: agente self-hosted con acceso a red corporativa SQL Server
+        pool:
+          name: '$(SELF_HOSTED_POOL)'
+        steps:
+          - checkout: self
+
+          - task: NodeTool@0
+            displayName: Use Node.js $(NODE_VERSION)
+            inputs:
+              versionSpec: '$(NODE_VERSION)'
+
+          - script: |
+              cd $(BACKEND_WORKDIR)
+              npm ci
+              npm run migrate:sql
+            displayName: Run backend migrations
+            env:
+              SQLSERVER_HOST: $(SQLSERVER_HOST)
+              SQLSERVER_PORT: $(SQLSERVER_PORT)
+              SQLSERVER_USER: $(SQLSERVER_USER)
+              SQLSERVER_PASSWORD: $(SQLSERVER_PASSWORD)
+              SQLSERVER_DATABASE: $(SQLSERVER_DATABASE)
+              SQLSERVER_ENCRYPT: $(SQLSERVER_ENCRYPT)
+              SQLSERVER_TRUST_SERVER_CERTIFICATE: $(SQLSERVER_TRUST_SERVER_CERTIFICATE)
+
+  - stage: Deploy
+    displayName: Deploy apps
+    dependsOn:
+      - BuildAndTest
+      - MigrateDb
+    condition: |
+      and(
+        succeeded(),
+        ${{ parameters.runDeploy }},
+        or(
+          not(${{ parameters.runMigrations }}),
+          succeeded('MigrateDb')
+        )
+      )
+    jobs:
+      - deployment: DeployBackend
+        displayName: Deploy backend (Azure Web App)
+        environment: ${{ parameters.targetEnvironment }}
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: backend
+
+                - task: AzureWebApp@1
+                  displayName: Deploy backend artifact
+                  inputs:
+                    azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+                    appType: webAppLinux
+                    appName: '$(BACKEND_WEBAPP_NAME)'
+                    package: '$(Pipeline.Workspace)/backend'
+                    runtimeStack: 'NODE|20-lts'
+                    startUpCommand: 'node dist/server.js'
+
+      - deployment: DeployFrontend
+        displayName: Deploy frontend (Azure Storage Static Website)
+        environment: ${{ parameters.targetEnvironment }}
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: frontend
+
+                - task: AzureCLI@2
+                  displayName: Upload static files to $web
+                  inputs:
+                    azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az storage blob upload-batch \
+                        --account-name "$(FRONTEND_STORAGE_ACCOUNT)" \
+                        --destination '$web' \
+                        --source "$(Pipeline.Workspace)/frontend" \
+                        --overwrite true \
+                        --auth-mode login
+
+                      if [ -n "$(AZURE_CDN_PROFILE)" ] && [ -n "$(AZURE_CDN_ENDPOINT)" ] && [ -n "$(AZURE_CDN_RESOURCE_GROUP)" ]; then
+                        az cdn endpoint purge \
+                          --resource-group "$(AZURE_CDN_RESOURCE_GROUP)" \
+                          --profile-name "$(AZURE_CDN_PROFILE)" \
+                          --name "$(AZURE_CDN_ENDPOINT)" \
+                          --content-paths '/*'
+                      else
+                        echo "CDN purge skipped (AZURE_CDN_PROFILE/AZURE_CDN_ENDPOINT/AZURE_CDN_RESOURCE_GROUP not configured)."
+                      fi
+
+  - stage: Healthcheck
+    displayName: Post-deploy healthcheck
+    dependsOn: Deploy
+    condition: succeeded('Deploy')
+    jobs:
+      - job: BackendHealth
+        displayName: Check backend /health
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: |
+              echo "Checking $(BACKEND_HEALTHCHECK_URL)"
+              HTTP_CODE=$(curl -s -o /tmp/health.txt -w "%{http_code}" "$(BACKEND_HEALTHCHECK_URL)")
+              cat /tmp/health.txt
+              test "$HTTP_CODE" = "200"
+            displayName: Healthcheck backend
