@@ -1,0 +1,25 @@
+info:
+  name: "esperado: 400 (MUNICIPALITY_DEPARTMENT_MISMATCH o MUNICIPALITY_NOT_FOUND según tus datos)."
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: http://localhost:4000/api/pdf-records
+  body:
+    type: json
+    data: |-
+      {
+        "pdfId": "test-mismatch",
+        "documentNumber": "1234567890",
+        "departmentId": 1,
+        "municipalityId": 1,
+        "createdAt": "2026-03-02T12:15:00.000Z"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

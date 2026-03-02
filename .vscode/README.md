@@ -31,6 +31,17 @@ npm install
 npm run dev
 ```
 
+## Migraciones SQL (Fase 7)
+Script de migraciones versionadas:
+
+```bash
+npm run migrate:sql
+```
+
+- Toma archivos en `src/sql/migrations/*.sql`.
+- Registra ejecuciones en `dbo.schema_migrations`.
+- No repite migraciones ya aplicadas.
+
 Health check:
 - `GET /health`
 

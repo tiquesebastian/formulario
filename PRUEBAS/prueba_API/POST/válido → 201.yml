@@ -1,0 +1,25 @@
+info:
+  name: " válido → 201"
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:4000/api/pdf-records
+  body:
+    type: json
+    data: |-
+      {
+        "pdfId": "test-001",
+        "documentNumber": "1234567890",
+        "departmentId": 29,
+        "municipalityId": 969,
+        "createdAt": "2026-03-02T12:00:00.000Z"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

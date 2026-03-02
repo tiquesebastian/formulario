@@ -1,0 +1,138 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        default: qa
+        options:
+          - qa
+          - prod
+      run_migrations:
+        description: "Run SQL migrations before deploy"
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    name: Build frontend/backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Backend install + build + test
+        working-directory: .vscode
+        run: |
+          npm ci
+          npm run build
+          npm run test -- --passWithNoTests
+
+      - name: Frontend install + build + test
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          npm run test -- --passWithNoTests
+
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dist
+          path: |
+            .vscode/dist
+            .vscode/package.json
+            .vscode/package-lock.json
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: |
+            frontend/dist
+
+  migrate_db:
+    name: SQL migrations
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ inputs.run_migrations }}
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        working-directory: .vscode
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: .vscode/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run migrations
+        run: npm run migrate:sql
+        env:
+          SQLSERVER_HOST: ${{ secrets.SQLSERVER_HOST }}
+          SQLSERVER_PORT: ${{ secrets.SQLSERVER_PORT }}
+          SQLSERVER_USER: ${{ secrets.SQLSERVER_USER }}
+          SQLSERVER_PASSWORD: ${{ secrets.SQLSERVER_PASSWORD }}
+          SQLSERVER_DATABASE: ${{ secrets.SQLSERVER_DATABASE }}
+          SQLSERVER_ENCRYPT: ${{ secrets.SQLSERVER_ENCRYPT }}
+          SQLSERVER_TRUST_SERVER_CERTIFICATE: ${{ secrets.SQLSERVER_TRUST_SERVER_CERTIFICATE }}
+
+  deploy:
+    name: Deploy apps
+    runs-on: ubuntu-latest
+    needs: [build, migrate_db]
+    if: ${{ always() && needs.build.result == 'success' && (needs.migrate_db.result == 'success' || needs.migrate_db.result == 'skipped') }}
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Trigger backend deploy webhook
+        if: ${{ secrets.BACKEND_DEPLOY_WEBHOOK != '' }}
+        run: |
+          curl -X POST "${{ secrets.BACKEND_DEPLOY_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d '{"environment":"${{ inputs.environment }}"}'
+
+      - name: Trigger frontend deploy webhook
+        if: ${{ secrets.FRONTEND_DEPLOY_WEBHOOK != '' }}
+        run: |
+          curl -X POST "${{ secrets.FRONTEND_DEPLOY_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d '{"environment":"${{ inputs.environment }}"}'
+
+      - name: Warn when deploy hooks are missing
+        if: ${{ secrets.BACKEND_DEPLOY_WEBHOOK == '' || secrets.FRONTEND_DEPLOY_WEBHOOK == '' }}
+        run: echo "Deploy webhooks not configured yet. Set BACKEND_DEPLOY_WEBHOOK and FRONTEND_DEPLOY_WEBHOOK secrets."
+
+  post_deploy_healthcheck:
+    name: Post-deploy healthcheck
+    runs-on: ubuntu-latest
+    needs: deploy
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Healthcheck backend
+        if: ${{ secrets.BACKEND_HEALTHCHECK_URL != '' }}
+        run: |
+          echo "Checking ${{ secrets.BACKEND_HEALTHCHECK_URL }}"
+          HTTP_CODE=$(curl -s -o /tmp/health.txt -w "%{http_code}" "${{ secrets.BACKEND_HEALTHCHECK_URL }}")
+          cat /tmp/health.txt
+          test "$HTTP_CODE" = "200"
+
+      - name: Warn when healthcheck URL is missing
+        if: ${{ secrets.BACKEND_HEALTHCHECK_URL == '' }}
+        run: echo "BACKEND_HEALTHCHECK_URL secret is not configured."

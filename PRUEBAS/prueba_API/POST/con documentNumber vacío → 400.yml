@@ -1,0 +1,25 @@
+info:
+  name: con documentNumber vacío → 400
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:4000/api/pdf-records
+  body:
+    type: json
+    data: |-
+      {
+        "pdfId": "test-empty-doc",
+        "documentNumber": "",
+        "departmentId": 29,
+        "municipalityId": 969,
+        "createdAt": "2026-03-02T12:10:00.000Z"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
