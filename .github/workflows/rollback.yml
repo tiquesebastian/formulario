@@ -20,14 +20,16 @@ jobs:
   rollback:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    env:
+      ROLLBACK_DEPLOY_WEBHOOK: ${{ secrets.ROLLBACK_DEPLOY_WEBHOOK }}
     steps:
       - name: Trigger rollback webhook
-        if: ${{ secrets.ROLLBACK_DEPLOY_WEBHOOK != '' }}
+        if: ${{ env.ROLLBACK_DEPLOY_WEBHOOK != '' }}
         run: |
-          curl -X POST "${{ secrets.ROLLBACK_DEPLOY_WEBHOOK }}" \
+          curl -X POST "${{ env.ROLLBACK_DEPLOY_WEBHOOK }}" \
             -H "Content-Type: application/json" \
             -d '{"environment":"${{ inputs.environment }}","version":"${{ inputs.version }}"}'
 
       - name: Warn when rollback webhook is missing
-        if: ${{ secrets.ROLLBACK_DEPLOY_WEBHOOK == '' }}
+        if: ${{ env.ROLLBACK_DEPLOY_WEBHOOK == '' }}
         run: echo "ROLLBACK_DEPLOY_WEBHOOK is not configured yet."
